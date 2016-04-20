@@ -2,26 +2,27 @@
 #define SCENE_H
 #include "primitive.hpp"
 #include "ray.hpp"
+#include "light.hpp"
 #include <vector>
 #include <memory>
 
 class Camera {
     Ray pos;
     Vector orientation;
-    double scale;
     double zoom;
 public:
-    Camera(Ray ray, Vector orientation, double scale, double zoom) : pos(ray), orientation(orientation), scale(scale), zoom(zoom) {}
+    Camera(Ray ray, Vector orientation, double zoom) : pos(ray), orientation(orientation), zoom(zoom) {}
 
     Ray get_ray(double x, double y) const {
         Vector ort = vec(pos.direction, orientation);
         Vector direction = pos.direction*zoom + orientation*x + ort*y;
-        return Ray(pos.start, direction * scale);
+        return Ray(pos.start, direction / zoom);
     }
 };
 
 class Scene {
     std::vector<std::unique_ptr<Primitive> > objects;
+    std::vector<Light> lights;
     Camera camera;
 public:
     Scene(Camera camera) : camera(camera) {}
@@ -31,6 +32,10 @@ public:
 
     void add_object(std::unique_ptr<Primitive> pointer) {
         objects.push_back(std::move(pointer));
+    }
+
+    void add_light(Light light) {
+        lights.push_back(light);
     }
 
     Ray get_ray(double x, double y) const {
@@ -53,7 +58,8 @@ public:
         if (!closest) {
             return Color();
         }
-        return closest->texture(ray.get_point(min_dist));
+        Point p = ray.get_point(min_dist);
+        return closest->texture(p);
     }
 };
 #endif

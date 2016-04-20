@@ -21,15 +21,13 @@ class Surface {
 
 public:
     Ray get_ray(int x, int y) {
-        return scene.get_ray((x - height/2) / height * 2, (y - width/2) / width*2);
+        return scene.get_ray((x - height/2.0) / height * 2, (y - width/2.0) / width*2);
     }
 
     void draw_pixel(int x, int y, Color c) {
-        cairo_move_to(cr, x, y);
-        cairo_line_to(cr, x, y);
-        cairo_set_line_width(cr, 1);
         cairo_set_source_rgb(cr, c.x, c.y, c.z);
-        cairo_stroke(cr);
+        cairo_rectangle(cr, x, y, 1, 1);
+        cairo_fill(cr);
     }
 
     void draw() {

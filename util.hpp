@@ -77,7 +77,7 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     }
 
     friend Vector vec(Vector a, Vector b) {
-        return Vector(a.y*b.x-a.x*b.y, a.x*b.x-a.x*b.x, a.x*b.y-a.y*b.x);
+        return Vector(a.y*b.z-a.z*b.y, a.x*b.z-a.x*b.z, a.x*b.y-a.y*b.x);
     }
 };
 
