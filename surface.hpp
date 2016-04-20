@@ -1,5 +1,5 @@
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef SURFACE_H
+#define SURFACE_H
 #include "scene.hpp"
 #include "ray.hpp"
 
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    Surface(Scene scene, int height = 0, int width = 0) : scene(scene), height(height), width(width) {
+    Surface(const Scene& scene, int height = 0, int width = 0) : scene(scene), height(height), width(width) {
         Display *dsp;
         Drawable da;
         Screen *scr;

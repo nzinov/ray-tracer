@@ -11,7 +11,7 @@ class Camera {
     double scale;
     double zoom;
 public:
-    Camera(Ray ray, double scale, double zoom) : pos(ray), scale(scale), zoom(zoom) {}
+    Camera(Ray ray, Vector orientation, double scale, double zoom) : pos(ray), orientation(orientation), scale(scale), zoom(zoom) {}
 
     Ray get_ray(double x, double y) const {
         Vector ort = vec(pos.direction, orientation);
@@ -25,6 +25,13 @@ class Scene {
     Camera camera;
 public:
     Scene(Camera camera) : camera(camera) {}
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
+    ~Scene() {}
+
+    void add_object(std::unique_ptr<Primitive> pointer) {
+        objects.push_back(std::move(pointer));
+    }
 
     Ray get_ray(double x, double y) const {
         return camera.get_ray(x, y);
