@@ -1,0 +1,15 @@
+#ifndef RAY_H
+#define RAY_H
+#include "util.hpp"
+
+struct Ray {
+    Point start;
+    Vector direction;
+    public:
+    Ray(Point start, Vector direction) : start(start), direction(direction) {}
+
+    Point get_point(double t) {
+        return start + direction*t;
+    }
+};
+#endif
