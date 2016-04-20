@@ -59,7 +59,29 @@ public:
             return Color();
         }
         Point p = ray.get_point(min_dist);
-        return closest->texture(p);
+        for (auto& light : lights) {
+            Ray light_ray(p, light.point - p);
+            if (dot(closest->normal(p), light_ray.direction) < 0) {
+                continue;
+            }
+            min_dist = INFINITY;
+            for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
+                if (obj->get() == closest) {
+                    continue;
+                }
+                Maybe<double> dist = (*obj)->intersect(light_ray);
+                if (!dist) {
+                    continue;
+                }
+                if (dist.val() < min_dist) {
+                    min_dist = dist.val();
+                }
+            }
+            if (min_dist >= 1 - EPS) {
+                return closest->texture(p);
+            }
+        }
+        return Color();
     }
 };
 #endif
