@@ -78,10 +78,10 @@ public:
                 }
             }
             if (min_dist >= 1 - EPS) {
-                return closest->texture(p);
+                return closest->texture(p)*(dot(closest->normal(p), light_ray.direction)/sq(light_ray.direction)*2 + 0.09);
             }
         }
-        return Color();
+        return closest->texture(p)*0.1;
     }
 };
 #endif

@@ -81,6 +81,10 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     }
 };
 
+inline double sq(Vector v) {
+    return dot(v, v);
+}
+
 typedef Vector Point;
 
 struct Box : public Point {
