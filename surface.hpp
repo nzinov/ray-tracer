@@ -31,18 +31,6 @@ public:
         cairo_fill(cr);
     }
 
-    void draw_border() {
-        const Color c(1, 1, 0);
-        for (int x = 0; x < width; ++x) {
-            draw_pixel(x, 0, c);
-            draw_pixel(x, height-1, c);
-        }
-        for (int y = 0; y < height; ++y) {
-            draw_pixel(0, y, Color(0, 1, 1));
-            draw_pixel(width-1, y, Color(0, 1, 1));
-        }
-    }
-
     void draw() {
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
@@ -50,7 +38,6 @@ public:
                 draw_pixel(x, y, c);
             }
         }
-        draw_border();
     }
 
     Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height) {
