@@ -27,6 +27,10 @@ inline double sq(double val) {
 
 const double EPS = 1e-6;
 
+bool almost_zero(double val) {
+    return fabs(val) < EPS;
+}
+
 struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>, boost::equality_comparable<Vector> {
     double x, y, z;
     Vector() : x(0), y(0), z(0) {}
@@ -77,7 +81,7 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     }
 
     friend Vector vec(Vector a, Vector b) {
-        return Vector(a.y*b.z-a.z*b.y, a.x*b.z-a.x*b.z, a.x*b.y-a.y*b.x);
+        return Vector(a.y*b.z-a.z*b.y, -(a.x*b.z-a.z*b.x), a.x*b.y-a.y*b.x);
     }
 };
 

@@ -11,7 +11,9 @@ class Camera {
     Vector orientation;
     double zoom;
 public:
-    Camera(Ray ray, Vector orientation, double zoom) : pos(ray), orientation(orientation), zoom(zoom) {}
+    Camera(Ray ray, Vector orientation, double zoom) : pos(ray), orientation(orientation), zoom(zoom) {
+        orientation /= orientation.length();
+    }
 
     Ray get_ray(double x, double y) const {
         Vector ort = vec(pos.direction, orientation);
