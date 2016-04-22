@@ -14,14 +14,15 @@
 
 class Surface {
     const Scene& scene;
-    int height;
     int width;
+    int height;
     cairo_surface_t* cairo_surface;
     cairo_t* cr;
+    Display *dsp;
 
 public:
     Ray get_ray(int x, int y) {
-        return scene.get_ray((x - height/2.0) / height * 2, (y - width/2.0) / width*2);
+        return scene.get_ray((x - width/2.0) / width*2, (y - height/2.0) / width*2);
     }
 
     void draw_pixel(int x, int y, Color c) {
@@ -30,17 +31,29 @@ public:
         cairo_fill(cr);
     }
 
+    void draw_border() {
+        const Color c(1, 1, 0);
+        for (int x = 0; x < width; ++x) {
+            draw_pixel(x, 0, c);
+            draw_pixel(x, height-1, c);
+        }
+        for (int y = 0; y < height; ++y) {
+            draw_pixel(0, y, Color(0, 1, 1));
+            draw_pixel(width-1, y, Color(0, 1, 1));
+        }
+    }
+
     void draw() {
-        for (int x = 0; x < height; ++x) {
-            for (int y = 0; y < width; ++y) {
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
                 Color c = scene.trace_ray(get_ray(x, y));
                 draw_pixel(x, y, c);
             }
         }
+        draw_border();
     }
 
-    Surface(const Scene& scene, int height = 0, int width = 0) : scene(scene), height(height), width(width) {
-        Display *dsp;
+    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height) {
         Drawable da;
         Screen *scr;
         int screen;
@@ -51,26 +64,55 @@ public:
         }
         screen = DefaultScreen(dsp);
         scr = DefaultScreenOfDisplay(dsp);
-        if (!height || !width) {
-            height = WidthOfScreen(scr), width = HeightOfScreen(scr);
-            da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, height, width, 0, 0, 0);
-        }
-        else {
-            da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, height, width, 0, 0, 0);
-        }
-        XSelectInput(dsp, da, ButtonPressMask | KeyPressMask);
+        width = WidthOfScreen(scr), height = HeightOfScreen(scr);
+        da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, width, height, 0, 0, 0);
+        XSelectInput(dsp, da, ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
         XMapWindow(dsp, da);
-
-        sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), height, width);
-        cairo_xlib_surface_set_size(sfc, height, width);
+        sfc = cairo_xlib_surface_create(dsp, da, DefaultVisual(dsp, screen), width, height);
+        cairo_xlib_surface_set_size(sfc, width, height);
 
         cairo_surface = sfc;
         cr = cairo_create(sfc);
     }
 
-    ~Surface() {
-        Display *dsp = cairo_xlib_surface_get_display(cairo_surface);
+    void event_loop() {
+        while (1)  {
+            XEvent report;
+            XNextEvent(dsp, &report);
+            switch  (report.type) {
+                case Expose:
+                    if (report.xexpose.count != 0) {
+                        break;
+                    }
+                    draw();
+                    break;
+                case ConfigureNotify:
+                    /* Window has been resized; change width
+                     * and height to send to place_text and
+                     * place_graphics in next Expose */
+                    if (width == report.xconfigure.width && height == report.xconfigure.height) {
+                        break;
+                    }
+                    width = report.xconfigure.width;
+                    height = report.xconfigure.height;
+                    draw();
+                    break;
+                case ButtonPress:
+                    break;
+                case KeyPress:
+                    if (report.xkey.keycode == 9) {
+                        return;
+                    }
+                default:
+                    /* All events selected by StructureNotifyMask
+                     * except ConfigureNotify are thrown away here,
+                     * since nothing is done with them */
+                    break;
+            } /* End switch */
+        }
+    }
 
+    ~Surface() {
         cairo_destroy(cr);
         cairo_surface_destroy(cairo_surface);
         XCloseDisplay(dsp);
