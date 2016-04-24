@@ -7,7 +7,7 @@ class Triangle : public Primitive {
 public:
     Triangle(Color color, Point a, Point b, Point c) : Primitive(color), a(a), b(b), c(c) {}
     virtual Vector normal(Point) const {
-        return vec(b - a, c - a);
+        return vec(b - a, c - a).normalized();
     }
 
     virtual Maybe<double> intersect(Ray ray) const {
@@ -20,7 +20,7 @@ public:
             return Maybe<double>();
         }
         double inv_det = 1.0 / det;
-        Vector move = a - ray.start;
+        Vector move = ray.start - a;
 
         double u = dot(move, P) * inv_det;
         if (u < 0.0 || u > 1.0) {

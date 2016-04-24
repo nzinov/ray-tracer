@@ -52,13 +52,13 @@ public:
             if (!dist) {
                 continue;
             }
-            if (dist.val() < min_dist) {
+            if (dist.val() > -EPS && dist.val() < min_dist) {
                 min_dist = dist.val();
                 closest = obj->get();
             }
         }
         if (!closest) {
-            return Color();
+            return Color(0.1, 0, 0);
         }
         Point p = ray.get_point(min_dist);
         for (auto& light : lights) {
@@ -75,12 +75,12 @@ public:
                 if (!dist) {
                     continue;
                 }
-                if (dist.val() < min_dist) {
+                if (dist.val() > -EPS && dist.val() < min_dist) {
                     min_dist = dist.val();
                 }
             }
             if (min_dist >= 1 - EPS) {
-                return closest->texture(p)*(dot(closest->normal(p), light_ray.direction)/sq(light_ray.direction)*2 + 0.09);
+                return closest->texture(p)*(dot(closest->normal(p), light_ray.direction)/sq(light_ray.direction));
             }
         }
         return closest->texture(p)*0.1;
