@@ -3,14 +3,19 @@
 #include "sphere.hpp"
 #include "triangle.hpp"
 #include "light.hpp"
+#include "stl_loader.hpp"
 #include <time.h>
 
-int main()
+int main(int argc, char* argv[])
 {
-    Scene s(Camera(Ray(Point(), Vector(1, 0, 0)), Point(0, 1, 0), 1));
-    s.add_object(std::make_unique<Sphere>(Color(1, 0, 0), Point(5, 2, 2), 1));
-    s.add_object(std::make_unique<Triangle>(Color(1, 0, 0), Point(2, 0, 0), Point(3, 0.5, 0), Point(2, 0, 0.5)));
-    s.add_light(Light{Point(0, 0, 0), Color()});
-    Surface sf(s);
-    sf.event_loop();
+    if (argc < 2) {
+        return 0;
+    }
+    Scene s(Camera(Ray(Point(-3, 0.5, 0.5), Vector(1, 0, 0)), Point(0, 1, 0), 0.5));
+    s.add_light(Light{Point(-2, 0, 0), Color()});
+    for (int i = 1; i < 15; ++i) {
+        STLLoader::populate(s, argv[1], i);
+        Surface sf(s);
+        sf.event_loop();
+    }
 }
