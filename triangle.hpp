@@ -3,16 +3,16 @@
 #include "primitive.hpp"
 
 class Triangle : public Primitive {
-    Point a, b, c;
+    Point vertices[3];
 public:
-    Triangle(Color color, Point a, Point b, Point c) : Primitive(color), a(a), b(b), c(c) {}
+    Triangle(Color color, Point a, Point b, Point c) : Primitive(color), vertices{a, b, c} {}
     virtual Vector normal(Point) const {
-        return vec(b - a, c - a).normalized();
+        return vec(vertices[1] - vertices[0], vertices[2] - vertices[0]).normalized();
     }
 
     virtual double intersect(Ray ray) const {
-        Vector edge1 = b - a;
-        Vector edge2 = c - a;
+        Vector edge1 = vertices[1] - vertices[0];
+        Vector edge2 = vertices[2] - vertices[0];
         //Begin calculating determinant - also used to calculate u parameter
         Vector P = vec(ray.direction, edge2);
         double det = dot(P, edge1);
@@ -20,7 +20,7 @@ public:
             return INFINITY;
         }
         double inv_det = 1.0 / det;
-        Vector move = ray.start - a;
+        Vector move = ray.start - vertices[0];
 
         double u = dot(move, P) * inv_det;
         if (u < 0.0 || u > 1.0) {
@@ -35,8 +35,16 @@ public:
         return t;
     }
 
-    virtual Box bbox() const {
-        return Box(Point(), 0, 0, 0);
+    virtual BBox bbox() const {
+        Point lower;
+        Point upper;
+        for (const Point& vertex : vertices) {
+            for (int c = 0; c < 3; ++c) {
+                lower.coord[c] = std::min(lower.coord[c], vertex.coord[c]);
+                upper.coord[c] = std::max(upper.coord[c], vertex.coord[c]);
+            }
+        }
+        return BBox(lower,upper);
     }
 };
 #endif

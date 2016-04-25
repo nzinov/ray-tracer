@@ -31,8 +31,9 @@ public:
         return INFINITY;
     }
 
-    virtual Box bbox() const {
-        return Box(center, radius, radius, radius);
+    virtual BBox bbox() const {
+        Point diag(radius, radius, radius);
+        return BBox(center - diag, center + diag);
     }
 };
 #endif

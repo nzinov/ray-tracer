@@ -32,9 +32,14 @@ bool almost_zero(double val) {
 }
 
 struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>, boost::equality_comparable<Vector> {
-    double x, y, z;
-    Vector() : x(0), y(0), z(0) {}
-    Vector(double x, double y, double z) : x(x), y(y), z(z) {}
+    union {
+        struct {
+            double x, y, z;
+        };
+        double coord[3];
+    };
+    Vector() : coord{0, 0, 0} {}
+    Vector(double x, double y, double z) : coord{x, y, z} {}
 
     double length() const {
         return sqrt(sq(x) + sq(y) + sq(z));
@@ -91,9 +96,8 @@ inline double sq(Vector v) {
 
 typedef Vector Point;
 
-struct Box : public Point {
-    double dx, dy, dz;
-    Box(double x, double y, double z, double dx, double dy, double dz) : Point(x, y, z), dx(dx), dy(dy), dz(dz) {}
-    Box(Point p, double dx, double dy, double dz) : Point(p), dx(dx), dy(dy), dz(dz) {}
+struct BBox {
+    Point lower, upper;
+    BBox(Point l, Point u) : lower(l), upper(u) {}
 };
 #endif
