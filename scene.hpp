@@ -4,7 +4,6 @@
 #include "ray.hpp"
 #include "light.hpp"
 #include <vector>
-#include <memory>
 #include <cmath>
 
 class Camera {
@@ -25,21 +24,25 @@ public:
 
 struct Intersection {
     double t;
-    Primitive* object;
+    const Primitive& object;
 };
 
 class Scene {
-    std::vector<std::unique_ptr<Primitive> > objects;
+    std::vector<Primitive*> objects;
     std::vector<Light> lights;
     Camera camera;
 public:
     Scene(Camera camera) : camera(camera) {}
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
-    ~Scene() {}
+    ~Scene() {
+        for (auto el : objects) {
+            delete el;
+        }
+    }
 
-    void add_object(std::unique_ptr<Primitive> pointer) {
-        objects.push_back(std::move(pointer));
+    void add_object(Primitive* pointer) {
+        objects.push_back(pointer);
     }
 
     void add_light(Light light) {
@@ -51,36 +54,36 @@ public:
     }
 
     Intersection find_closest(Ray ray) const {
-        Primitive* closest = nullptr;
+        const Primitive* closest;
         double min_dist = INFINITY;
         for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
             double dist = (*obj)->intersect(ray);
             if (!std::isinf(dist) && dist > EPS && dist < min_dist) {
                 min_dist = dist;
-                closest = obj->get();
+                closest = *obj;
             }
         }
-        return {min_dist, closest};
+        return {min_dist, *closest};
     }
 
     Color trace_ray(Ray ray) const {
         Intersection closest = find_closest(ray);
-        if (!closest.object) {
+        if (std::isinf(closest.t)) {
             return Color(0.1, 0, 0);
         }
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            double angle = dot(closest.object->normal(p), light_ray.direction);
+            double angle = dot(closest.object.normal(p), light_ray.direction);
             if (angle < 0) {
                 continue;
             }
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t >= 1 - EPS) {
-                return closest.object->texture(p)*(angle/sq(light_ray.direction));
+                return closest.object.texture(p)*(angle/sq(light_ray.direction));
             }
         }
-        return closest.object->texture(p)*0.1;
+        return closest.object.texture(p)*0.1;
     }
 };
 #endif

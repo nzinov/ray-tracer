@@ -16,7 +16,7 @@ public:
                 for (int i = 0; i < 3; ++i) {
                     file >> next >> vertices[i].x >> vertices[i].y >> vertices[i].z;
                 }
-                scene.add_object(std::make_unique<Triangle>(Color(0, 3, 0), vertices[0], vertices[1], vertices[2]));
+                scene.add_object(new Triangle(Color(0, 3, 0), vertices[0], vertices[1], vertices[2]));
             }
         }
     }

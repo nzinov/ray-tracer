@@ -11,7 +11,7 @@ public:
     Primitive(Color color) : color(color) {}
     virtual Vector normal(Point point) const = 0;
 
-    virtual Color texture(Point point) {
+    virtual Color texture(Point point) const {
         return color;
     }
 
