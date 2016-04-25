@@ -15,7 +15,7 @@ public:
         return color;
     }
 
-    virtual Maybe<double> intersect(Ray ray) const = 0;
+    virtual double intersect(Ray ray) const = 0;
     virtual Box bbox() const = 0;
     Primitive(const Primitive&) = delete;
     Primitive& operator=(const Primitive&) = delete;

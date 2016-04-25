@@ -11,14 +11,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 class Surface {
     const Scene& scene;
     int width;
     int height;
+    bool rendered;
     cairo_surface_t* cairo_surface;
     cairo_t* cr;
     Display *dsp;
+    std::vector<std::vector<Color> > buffer;
 
 public:
     Ray get_ray(int x, int y) {
@@ -31,16 +34,30 @@ public:
         cairo_fill(cr);
     }
 
-    void draw() {
+    void render() {
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 Color c = scene.trace_ray(get_ray(x, y));
+                buffer[x][y] = c;
                 draw_pixel(x, y, c);
+            }
+        }
+        rendered = true;
+    }
+
+    void draw() {
+        if (!rendered) {
+            render();
+            return;
+        }
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                draw_pixel(x, y, buffer[x][y]);
             }
         }
     }
 
-    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height) {
+    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
         Drawable da;
         Screen *scr;
         int screen;
@@ -60,6 +77,7 @@ public:
 
         cairo_surface = sfc;
         cr = cairo_create(sfc);
+        buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
     }
 
     void event_loop() {

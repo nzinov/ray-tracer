@@ -11,7 +11,7 @@ public:
         return (point - center).normalized();
     }
 
-    virtual Maybe<double> intersect(Ray ray) const {
+    virtual double intersect(Ray ray) const {
         Vector move = ray.start - center;
         double a = dot(ray.direction, ray.direction);
         double b = dot(move, ray.direction);
@@ -28,7 +28,7 @@ public:
                 return t;
             }
         }
-        return Maybe<double>();
+        return INFINITY;
     }
 
     virtual Box bbox() const {

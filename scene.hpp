@@ -5,6 +5,7 @@
 #include "light.hpp"
 #include <vector>
 #include <memory>
+#include <cmath>
 
 class Camera {
     Ray pos;
@@ -20,6 +21,11 @@ public:
         Vector direction = pos.direction*zoom + orientation*x + ort*y;
         return Ray(pos.start, direction / zoom);
     }
+};
+
+struct Intersection {
+    double t;
+    Primitive* object;
 };
 
 class Scene {
@@ -44,46 +50,37 @@ public:
         return camera.get_ray(x, y);
     }
 
-    Color trace_ray(Ray ray) const {
+    Intersection find_closest(Ray ray) const {
         Primitive* closest = nullptr;
         double min_dist = INFINITY;
         for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
-            Maybe<double> dist = (*obj)->intersect(ray);
-            if (!dist) {
-                continue;
-            }
-            if (dist.val() > -EPS && dist.val() < min_dist) {
-                min_dist = dist.val();
+            double dist = (*obj)->intersect(ray);
+            if (!std::isinf(dist) && dist > EPS && dist < min_dist) {
+                min_dist = dist;
                 closest = obj->get();
             }
         }
-        if (!closest) {
+        return {min_dist, closest};
+    }
+
+    Color trace_ray(Ray ray) const {
+        Intersection closest = find_closest(ray);
+        if (!closest.object) {
             return Color(0.1, 0, 0);
         }
-        Point p = ray.get_point(min_dist);
+        Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            if (dot(closest->normal(p), light_ray.direction) < 0) {
+            double angle = dot(closest.object->normal(p), light_ray.direction);
+            if (angle < 0) {
                 continue;
             }
-            min_dist = INFINITY;
-            for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
-                if (obj->get() == closest) {
-                    continue;
-                }
-                Maybe<double> dist = (*obj)->intersect(light_ray);
-                if (!dist) {
-                    continue;
-                }
-                if (dist.val() > -EPS && dist.val() < min_dist) {
-                    min_dist = dist.val();
-                }
-            }
-            if (min_dist >= 1 - EPS) {
-                return closest->texture(p)*(dot(closest->normal(p), light_ray.direction)/sq(light_ray.direction));
+            Intersection obstacle = find_closest(light_ray);
+            if (obstacle.t >= 1 - EPS) {
+                return closest.object->texture(p)*(angle/sq(light_ray.direction));
             }
         }
-        return closest->texture(p)*0.1;
+        return closest.object->texture(p)*0.1;
     }
 };
 #endif
