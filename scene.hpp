@@ -3,6 +3,7 @@
 #include "primitive.hpp"
 #include "ray.hpp"
 #include "light.hpp"
+#include "kdtree.hpp"
 #include <vector>
 #include <cmath>
 
@@ -18,19 +19,24 @@ public:
     Ray get_ray(double x, double y) const {
         Vector ort = vec(pos.direction, orientation);
         Vector direction = pos.direction*zoom + orientation*x + ort*y;
-        return Ray(pos.start, direction / zoom);
+        return Ray(pos.start, direction);
+    }
+
+    std::pair<double, double> get_coord(Point p) const {
+        Vector v = p - pos.start;
+        double d = dot(v, pos.direction)/zoom;
+        double x = dot(v, orientation)/d;
+        double y = dot(v, vec(pos.direction, orientation))/d;
+        return {x, y};
     }
 };
 
-struct Intersection {
-    double t;
-    const Primitive& object;
-};
-
 class Scene {
+public:
     std::vector<Primitive*> objects;
     std::vector<Light> lights;
     Camera camera;
+    KDTree tree;
 public:
     Scene(Camera camera) : camera(camera) {}
     Scene(const Scene&) = delete;
@@ -49,21 +55,20 @@ public:
         lights.push_back(light);
     }
 
+    void prepare() {
+        tree.build(objects);
+    }
+
     Ray get_ray(double x, double y) const {
         return camera.get_ray(x, y);
     }
 
+    std::pair<double, double> get_coord(Point point) const {
+        return camera.get_coord(point);
+    }
+
     Intersection find_closest(Ray ray) const {
-        const Primitive* closest;
-        double min_dist = INFINITY;
-        for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
-            double dist = (*obj)->intersect(ray);
-            if (!std::isinf(dist) && dist > EPS && dist < min_dist) {
-                min_dist = dist;
-                closest = *obj;
-            }
-        }
-        return {min_dist, *closest};
+        return tree.intersect(ray);
     }
 
     Color trace_ray(Ray ray) const {
@@ -74,16 +79,16 @@ public:
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            double angle = dot(closest.object.normal(p), light_ray.direction);
+            double angle = dot(closest.object->normal(p), light_ray.direction);
             if (angle < 0) {
                 continue;
             }
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t >= 1 - EPS) {
-                return closest.object.texture(p)*(angle/sq(light_ray.direction));
+                return closest.object->texture(p)*(angle/sq(light_ray.direction));
             }
         }
-        return closest.object.texture(p)*0.1;
+        return closest.object->texture(p)*0.1;
     }
 };
 #endif

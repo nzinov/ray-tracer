@@ -96,8 +96,4 @@ inline double sq(Vector v) {
 
 typedef Vector Point;
 
-struct BBox {
-    Point lower, upper;
-    BBox(Point l, Point u) : lower(l), upper(u) {}
-};
 #endif

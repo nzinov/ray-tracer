@@ -19,5 +19,6 @@ public:
                 scene.add_object(new Triangle(Color(0, 3, 0), vertices[0], vertices[1], vertices[2]));
             }
         }
+        scene.prepare();
     }
 };

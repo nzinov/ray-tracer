@@ -4,6 +4,7 @@
 #include "util.hpp"
 #include "color.hpp"
 #include "ray.hpp"
+#include "bbox.hpp"
 
 class Primitive {
     Color color;

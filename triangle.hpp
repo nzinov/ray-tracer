@@ -36,15 +36,10 @@ public:
     }
 
     virtual BBox bbox() const {
-        Point lower;
-        Point upper;
-        for (const Point& vertex : vertices) {
-            for (int c = 0; c < 3; ++c) {
-                lower.coord[c] = std::min(lower.coord[c], vertex.coord[c]);
-                upper.coord[c] = std::max(upper.coord[c], vertex.coord[c]);
-            }
-        }
-        return BBox(lower,upper);
+        BBox box(vertices[0], vertices[1]);
+        box += vertices[1];
+        box += vertices[2];
+        return box;
     }
 };
 #endif

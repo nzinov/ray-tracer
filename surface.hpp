@@ -28,6 +28,20 @@ public:
         return scene.get_ray((x - width/2.0) / width*2, (y - height/2.0) / width*2);
     }
 
+    std::pair<int, int> get_coord(Point p) {
+        auto pair = scene.get_coord(p);
+        return {pair.first*width/2 + width/2, pair.second*width/2 + height/2};
+    }
+
+    void draw_line(Point a, Point b) {
+        cairo_set_source_rgb(cr, 1, 1, 1);
+        cairo_set_line_width(cr, 1.0);
+        auto ac = get_coord(a);
+        auto bc = get_coord(b);
+        cairo_move_to(cr,ac.first,ac.second);   cairo_line_to (cr,bc.first,bc.second);
+        cairo_stroke (cr);
+    }
+
     void draw_pixel(int x, int y, Color c) {
         cairo_set_source_rgb(cr, c.x, c.y, c.z);
         cairo_rectangle(cr, x, y, 1, 1);
@@ -42,6 +56,7 @@ public:
                 draw_pixel(x, y, c);
             }
         }
+        scene.tree.debug_draw();
         rendered = true;
     }
 
@@ -55,6 +70,7 @@ public:
                 draw_pixel(x, y, buffer[x][y]);
             }
         }
+        scene.tree.debug_draw();
     }
 
     Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
