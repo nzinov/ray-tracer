@@ -8,7 +8,7 @@ struct Ray {
     public:
     Ray(Point start, Vector direction) : start(start), direction(direction) {}
 
-    Point get_point(double t) {
+    Point get_point(double t) const {
         return start + direction*t;
     }
 };

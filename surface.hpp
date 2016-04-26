@@ -51,6 +51,16 @@ public:
         cairo_rectangle(cr, x, y, 1, 1);
         cairo_fill(cr);
     }
+    
+    void draw_sq(Color c, Point p) {
+        if (!debug) {
+            return;
+        }
+        auto ac = get_coord(p);
+        cairo_set_source_rgb(cr, c.x, c.y, c.z);
+        cairo_rectangle(cr, ac.first - 3, ac.second - 3, 5, 5);
+        cairo_fill(cr);
+    }
 
     void render() {
         if (width == 0 || rendered) {
@@ -100,9 +110,12 @@ public:
     void event_loop() {
         int x = 500;
         int y = 300;
+        int z = 10;
         while (1)  {
             XEvent report;
             XNextEvent(dsp, &report);
+            Point p;
+            Point orig(-3, -3, 4);
             switch  (report.type) {
                 case Expose:
                     if (report.xexpose.count != 0) {
@@ -126,20 +139,17 @@ public:
                 case ButtonPress:
                 case KeyPress:
                     debug = true;
-                    for (int i = x - 5; i < x + 5; ++i) {
-                        for (int j = y - 5; j < y + 5; ++j) {
-                            draw_pixel(i, j, Color(1, 0, 0));
-                        }
-                    }
+                    p = get_ray(x, y).get_point(z);
+                    draw_line(Color(1, 1, 0), orig, p);
+                    draw_sq(Color(0, 1, 1), p);
                     switch (report.xkey.keycode) {
-                        case 9:
+                        case 36:
                             draw();
-                            for (int i = x - 5; i < x + 5; ++i) {
-                                for (int j = y - 5; j < y + 5; ++j) {
-                                    draw_pixel(i, j, Color(1, 0, 0));
-                                }
-                            }
-                            scene.trace_ray(get_ray(x, y));
+                            p = get_ray(x, y).get_point(z);
+                            scene.trace_ray(Ray(orig, (p-orig).normalized()));
+                            draw_line(Color(1, 1, 0), orig, p);
+                            draw_sq(Color(0, 1, 1), p);
+                            break;
                         case 111:
                             y -= 5;
                             break;
@@ -151,6 +161,12 @@ public:
                             break;
                         case 114:
                             x += 5;
+                            break;
+                        case 20:
+                            z -= 1;
+                            break;
+                        case 21:
+                            z += 1;
                             break;
                     }
                     debug = false;

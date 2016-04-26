@@ -63,7 +63,9 @@ struct Node {
             box.debug_draw(Color(1, 1, 1));
             return intersect_contents(ray);
         }
+        box.debug_draw(Color(1, 0, 1));
         double t_split = (coord - ray.start.coord[dim]) / ray.direction.coord[dim];
+        draw_sq(Color(1, 0, 0), ray.get_point(t_split) + Point(1, 1, 1));
         Node* lower = left;
         Node* upper = right;
         BBox l(box);

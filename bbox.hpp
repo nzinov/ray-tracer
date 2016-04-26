@@ -24,6 +24,9 @@ struct BBox {
         double hi2 = inv_dir.z*(upper.z - ray.start.z);
         tmin  = std::max(tmin, std::min(lo2, hi2));
         tmax = std::min(tmax, std::max(lo2, hi2));
+        if (tmax < tmin) {
+            return {INFINITY, INFINITY};
+        }
 
         return {tmin, tmax};
     }
