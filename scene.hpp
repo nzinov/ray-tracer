@@ -25,6 +25,9 @@ public:
     std::pair<double, double> get_coord(Point p) const {
         Vector v = p - pos.start;
         double d = dot(v, pos.direction)/zoom;
+        if (almost_zero(d)) {
+            return {0, 0};
+        }
         double x = dot(v, orientation)/d;
         double y = dot(v, vec(pos.direction, orientation))/d;
         return {x, y};
@@ -74,7 +77,7 @@ public:
     Color trace_ray(Ray ray) const {
         Intersection closest = find_closest(ray);
         if (std::isinf(closest.t)) {
-            return Color(0.1, 0, 0);
+            return Color(0, 0, 0);
         }
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
@@ -85,7 +88,7 @@ public:
             }
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t >= 1 - EPS) {
-                return closest.object->texture(p)*(angle/sq(light_ray.direction));
+                return closest.object->texture(p)*(angle/sq(light_ray.direction) + 0.09);
             }
         }
         return closest.object->texture(p)*0.1;

@@ -25,7 +25,7 @@ struct BBox {
         tmin  = std::max(tmin, std::min(lo2, hi2));
         tmax = std::min(tmax, std::max(lo2, hi2));
 
-        return {tmin, tmin};
+        return {tmin, tmax};
     }
 
     BBox& operator+=(const BBox& other) {
@@ -44,20 +44,20 @@ struct BBox {
         return *this;
     }
 
-    void debug_draw() const {
-       for (double x : {lower.x, upper.x}) { 
+    void debug_draw(Color c) const {
+        for (double x : {lower.x, upper.x}) { 
            for (double y : {lower.y, upper.y}) { 
-               draw_line(Point(x, y, lower.z), Point(x, y, upper.z));
+               draw_line(c, Point(x, y, lower.z), Point(x, y, upper.z));
            }
        }
        for (double x : {lower.x, upper.x}) { 
            for (double z : {lower.z, upper.z}) { 
-               draw_line(Point(x, lower.y, z), Point(x, upper.y, z));
+               draw_line(c, Point(x, lower.y, z), Point(x, upper.y, z));
            }
        }
-       for (double z : {lower.z, upper.z}) { 
-           for (double y : {lower.y, upper.y}) { 
-               draw_line(Point(lower.x, y, z), Point(upper.x, y, z));
+       for (double y : {lower.y, upper.y}) { 
+           for (double z : {lower.z, upper.z}) { 
+               draw_line(c, Point(lower.x, y, z), Point(upper.x, y, z));
            }
        }
     }

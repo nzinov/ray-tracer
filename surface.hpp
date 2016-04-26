@@ -15,6 +15,7 @@
 
 class Surface {
     const Scene& scene;
+    bool debug;
     int width;
     int height;
     bool rendered;
@@ -25,16 +26,19 @@ class Surface {
 
 public:
     Ray get_ray(int x, int y) {
-        return scene.get_ray((x - width/2.0) / width*2, (y - height/2.0) / width*2);
+        return scene.get_ray((x - width/2.0) / width, (y - height/2.0) / width);
     }
 
     std::pair<int, int> get_coord(Point p) {
         auto pair = scene.get_coord(p);
-        return {pair.first*width/2 + width/2, pair.second*width/2 + height/2};
+        return {(pair.first*width + width)/2, (pair.second*width + height)/2};
     }
 
-    void draw_line(Point a, Point b) {
-        cairo_set_source_rgb(cr, 1, 1, 1);
+    void draw_line(Color c, Point a, Point b) {
+        if (!debug) {
+            return;
+        }
+        cairo_set_source_rgb(cr, c.x, c.y, c.z);
         cairo_set_line_width(cr, 1.0);
         auto ac = get_coord(a);
         auto bc = get_coord(b);
@@ -49,31 +53,28 @@ public:
     }
 
     void render() {
+        if (width == 0 || rendered) {
+            return;
+        }
+        buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 Color c = scene.trace_ray(get_ray(x, y));
                 buffer[x][y] = c;
-                draw_pixel(x, y, c);
             }
         }
-        scene.tree.debug_draw();
         rendered = true;
     }
 
     void draw() {
-        if (!rendered) {
-            render();
-            return;
-        }
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 draw_pixel(x, y, buffer[x][y]);
             }
         }
-        scene.tree.debug_draw();
     }
 
-    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
+    Surface(const Scene& scene, int width = 0, int height = 0) : debug(false), scene(scene), width(width), height(height), rendered(false) {
         Drawable da;
         Screen *scr;
         int screen;
@@ -93,10 +94,12 @@ public:
 
         cairo_surface = sfc;
         cr = cairo_create(sfc);
-        buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
+        render();
     }
 
     void event_loop() {
+        int x = 500;
+        int y = 300;
         while (1)  {
             XEvent report;
             XNextEvent(dsp, &report);
@@ -105,6 +108,7 @@ public:
                     if (report.xexpose.count != 0) {
                         break;
                     }
+                    render();
                     draw();
                     break;
                 case ConfigureNotify:
@@ -116,14 +120,40 @@ public:
                     }
                     width = report.xconfigure.width;
                     height = report.xconfigure.height;
+                    render();
                     draw();
                     break;
                 case ButtonPress:
-                    break;
                 case KeyPress:
-                    if (report.xkey.keycode == 9) {
-                        return;
+                    debug = true;
+                    for (int i = x - 5; i < x + 5; ++i) {
+                        for (int j = y - 5; j < y + 5; ++j) {
+                            draw_pixel(i, j, Color(1, 0, 0));
+                        }
                     }
+                    switch (report.xkey.keycode) {
+                        case 9:
+                            draw();
+                            for (int i = x - 5; i < x + 5; ++i) {
+                                for (int j = y - 5; j < y + 5; ++j) {
+                                    draw_pixel(i, j, Color(1, 0, 0));
+                                }
+                            }
+                            scene.trace_ray(get_ray(x, y));
+                        case 111:
+                            y -= 5;
+                            break;
+                        case 116:
+                            y += 5;
+                            break;
+                        case 113:
+                            x -= 5;
+                            break;
+                        case 114:
+                            x += 5;
+                            break;
+                    }
+                    debug = false;
                 default:
                     /* All events selected by StructureNotifyMask
                      * except ConfigureNotify are thrown away here,
