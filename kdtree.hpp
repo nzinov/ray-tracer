@@ -65,25 +65,26 @@ struct Node {
         }
         box.debug_draw(Color(1, 0, 1));
         double t_split = (coord - ray.start.coord[dim]) / ray.direction.coord[dim];
-        draw_sq(Color(1, 0, 0), ray.get_point(t_split) + Point(1, 1, 1));
+        draw_sq(Color(1, 0, 0), ray.get_point(t_split));
         Node* lower = left;
         Node* upper = right;
         BBox l(box);
         BBox r(box);
         l.upper.coord[dim] = coord;
         r.lower.coord[dim] = coord;
+        Intersection nearest;
         if (ray.direction.coord[dim] < 0) {
             std::swap(lower, upper);
         }
         if (t_split < t_enter) {
-            return upper->intersect(ray, t_enter, t_leave, next(dim), r);
-        }
-        if (t_split > t_leave) {
-            return lower->intersect(ray, t_enter, t_leave, next(dim), l);
-        }
-        Intersection nearest = lower->intersect(ray, t_enter, t_split, next(dim), l);
-        if (std::isinf(nearest.t)) {
-            return upper->intersect(ray, t_split, t_leave, next(dim), r);
+            nearest = upper->intersect(ray, t_enter, t_leave, next(dim), r);
+        } else if (t_split > t_leave) {
+            nearest = lower->intersect(ray, t_enter, t_leave, next(dim), l);
+        } else {
+            nearest = lower->intersect(ray, t_enter, t_split, next(dim), l);
+            if (std::isinf(nearest.t) || nearest.t > t_split) {
+                nearest = upper->intersect(ray, t_split, t_leave, next(dim), r);
+            }
         }
         return nearest;
     }
@@ -93,22 +94,25 @@ struct Node {
         if (objects.size() <= CUTOFF) {
             return;
         }
-        std::sort(objects.begin(), objects.end(),
-                [dim](Primitive* a, Primitive* b) { return a->bbox().upper.coord[dim] < b->bbox().upper.coord[dim]; });
-        size_t split = objects.size() / 2;
-        std::sort(objects.begin() + split, objects.end(),
-                [dim](Primitive* a, Primitive* b) { return a->bbox().lower.coord[dim] < b->bbox().lower.coord[dim]; });
-        coord = objects[split - 1]->bbox().upper.coord[dim];
+        double lower = INFINITY;
+        double upper = -INFINITY;
+        for (auto p : objects) {
+            BBox b = p->bbox();
+            lower = std::min(lower, b.lower.coord[dim]);
+            upper = std::max(upper, b.upper.coord[dim]);
+        }
+        coord = (upper + lower) / 2;
         left = new Node();
         right = new Node();
-        std::copy(objects.begin(), objects.begin() + split, std::back_inserter(left->objects));
-        std::copy(objects.begin() + split, objects.end(), std::back_inserter(right->objects));
-        for (auto iter = objects.begin() + split; iter != objects.end(); ++iter) {
-            if ((*iter)->bbox().lower.coord[dim] > coord) {
-                break;
+        for (auto p : objects) {
+            if (p->bbox().lower.coord[dim] <= coord) {
+                left->objects.push_back(p);
             }
-            left->objects.push_back(*iter);
+            if (p->bbox().upper.coord[dim] >= coord) {
+                right->objects.push_back(p);
+            }
         }
+
         if (depth < 10) {
             left->split(next(dim), depth + 1);
             right->split(next(dim), depth + 1);

@@ -36,7 +36,7 @@ public:
     }
 
     virtual BBox bbox() const {
-        BBox box(vertices[0], vertices[1]);
+        BBox box(vertices[0], vertices[0]);
         box += vertices[1];
         box += vertices[2];
         return box;
