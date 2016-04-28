@@ -74,10 +74,11 @@ public:
         return tree.intersect(ray);
     }
 
+    const double AMBIENT = 0;
     Color trace_ray(Ray ray) const {
         Intersection closest = find_closest(ray);
         if (std::isinf(closest.t)) {
-            return Color(0, 0, 0);
+            return Color();
         }
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
@@ -88,10 +89,20 @@ public:
             }
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t >= 1 - EPS) {
-                return closest.object->texture(p)*(angle/sq(light_ray.direction) + 0.09);
+                return closest.object->texture(p)*(angle/sq(light_ray.direction) + AMBIENT);
             }
         }
-        return closest.object->texture(p)*0.1;
+        return closest.object->texture(p)*AMBIENT;
+    }
+
+    void find_best_view() {
+        const BBox& box = tree.get_bbox();
+        Point center = (box.lower + box.upper) / 2;
+        Vector radius = (box.upper - box.lower) / 2;
+        double dist = std::max(radius.y, radius.z);
+        center.x = box.lower.x - 5*dist;
+        camera = Camera(Ray(center, Vector(1, 0, 0)), Vector(0, 1, 0), 1);
+        add_light(Light{center, Color()});
     }
 };
 #endif

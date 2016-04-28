@@ -37,6 +37,28 @@ public:
         cairo_fill(cr);
     }
     
+    void enchance_balance() {
+        double factor = -INFINITY;
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                for (int comp = 0; comp < 3; ++comp) {
+                    double cur = buffer[x][y].coord[comp];
+                    if (cur > factor) {
+                        factor = cur;
+                    }
+                }
+            }
+        }
+        if (almost_zero(factor)) {
+            return;
+        }
+        for (int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                buffer[x][y] /= factor;
+            }
+        }
+    };
+
     void render() {
         if (width == 0 || rendered) {
             return;
@@ -48,6 +70,7 @@ public:
                 buffer[x][y] = c;
             }
         }
+        enchance_balance();
         rendered = true;
     }
 

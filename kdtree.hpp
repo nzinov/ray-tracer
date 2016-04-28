@@ -120,5 +120,9 @@ public:
         }
         return root->intersect(ray, inter.first, inter.second, 0);
     }
+
+    const BBox& get_bbox() {
+        return outer;
+    }
 };
 #endif
