@@ -95,13 +95,14 @@ public:
         return closest.object->texture(p)*AMBIENT;
     }
 
-    void find_best_view() {
+    void find_best_view(double angle) {
+        Vector dir = Vector(cos(angle), sin(angle), 0);
         const BBox& box = tree.get_bbox();
         Point center = (box.lower + box.upper) / 2;
         Vector radius = (box.upper - box.lower) / 2;
         double dist = std::max(radius.y, radius.z);
-        center.x = box.lower.x - 5*dist;
-        camera = Camera(Ray(center, Vector(1, 0, 0)), Vector(0, 1, 0), 1);
+        center -= 5*dist*dir;
+        camera = Camera(Ray(center, dir), Vector(0, 0, 1), 1);
         add_light(Light{center, Color()});
     }
 };

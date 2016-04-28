@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     //s.prepare();
     if (argc >= 2) {
         STLLoader::populate(s, argv[1]);
-        s.find_best_view();
+        s.find_best_view(0);
     }
     Surface sf(s);
     sf.event_loop();

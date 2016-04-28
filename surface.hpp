@@ -12,7 +12,7 @@
 #include <vector>
 
 class Surface {
-    const Scene& scene;
+    Scene& scene;
     int width;
     int height;
     bool rendered;
@@ -61,8 +61,10 @@ public:
 
     void render() {
         if (width == 0 || rendered) {
+            printf("skip");
             return;
         }
+        printf("(%i %i)\n", width, height);
         buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
@@ -75,6 +77,7 @@ public:
     }
 
     void draw() {
+        printf("draw");
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 draw_pixel(x, y, buffer[x][y]);
@@ -82,7 +85,7 @@ public:
         }
     }
 
-    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
+    Surface(Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
         Drawable da;
         Screen *scr;
         int screen;
@@ -106,6 +109,7 @@ public:
     }
 
     void event_loop() {
+        double angle = 0;
         while (1)  {
             XEvent report;
             XNextEvent(dsp, &report);
@@ -131,6 +135,21 @@ public:
                     break;
                 case ButtonPress:
                 case KeyPress:
+                    printf("ok");
+                    switch (report.xkey.keycode) {
+                        case 113:
+                            angle += 0.6;
+                            break;
+                        case 114:
+                            angle -= 0.6;
+                            break;
+                        default:
+                            continue;
+                    }
+                    scene.find_best_view(angle);
+                    rendered = false;
+                    render();
+                    draw();
                 default:
                     /* All events selected by StructureNotifyMask
                      * except ConfigureNotify are thrown away here,
