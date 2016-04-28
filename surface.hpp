@@ -61,10 +61,8 @@ public:
 
     void render() {
         if (width == 0 || rendered) {
-            printf("skip");
             return;
         }
-        printf("(%i %i)\n", width, height);
         buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
@@ -77,7 +75,6 @@ public:
     }
 
     void draw() {
-        printf("draw");
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 draw_pixel(x, y, buffer[x][y]);
@@ -135,7 +132,6 @@ public:
                     break;
                 case ButtonPress:
                 case KeyPress:
-                    printf("ok");
                     switch (report.xkey.keycode) {
                         case 113:
                             angle += 0.6;
