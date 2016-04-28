@@ -1,7 +1,5 @@
 #include "util.hpp"
 #include "color.hpp"
-void draw_line(Color c, Point a, Point b);
-void draw_sq(Color c, Point a);
 #include "surface.hpp"
 #include "scene.hpp"
 #include "sphere.hpp"
@@ -9,14 +7,6 @@ void draw_sq(Color c, Point a);
 #include "light.hpp"
 #include "stl_loader.hpp"
 #include <time.h>
-
-Surface* surface;
-void draw_line(Color c, Point a, Point b) {
-    surface->draw_line(c, a, b);
-}
-void draw_sq(Color c, Point a) {
-    surface->draw_sq(c, a);
-}
 
 int main(int argc, char* argv[])
 {
@@ -32,6 +22,5 @@ int main(int argc, char* argv[])
         STLLoader::populate(s, argv[1]);
     }
     Surface sf(s);
-    surface = &sf;
     sf.event_loop();
 }

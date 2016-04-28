@@ -46,23 +46,5 @@ struct BBox {
         }
         return *this;
     }
-
-    void debug_draw(Color c) const {
-        for (double x : {lower.x, upper.x}) { 
-           for (double y : {lower.y, upper.y}) { 
-               draw_line(c, Point(x, y, lower.z), Point(x, y, upper.z));
-           }
-       }
-       for (double x : {lower.x, upper.x}) { 
-           for (double z : {lower.z, upper.z}) { 
-               draw_line(c, Point(x, lower.y, z), Point(x, upper.y, z));
-           }
-       }
-       for (double y : {lower.y, upper.y}) { 
-           for (double z : {lower.z, upper.z}) { 
-               draw_line(c, Point(lower.x, y, z), Point(upper.x, y, z));
-           }
-       }
-    }
 };
 #endif

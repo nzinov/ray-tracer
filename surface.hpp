@@ -9,13 +9,10 @@
 #include <cairo/cairo.h>
 #include <cairo/cairo-xlib.h>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <vector>
 
 class Surface {
     const Scene& scene;
-    bool debug;
     int width;
     int height;
     bool rendered;
@@ -34,34 +31,12 @@ public:
         return {(pair.first*width + width)/2, (pair.second*width + height)/2};
     }
 
-    void draw_line(Color c, Point a, Point b) {
-        if (!debug) {
-            return;
-        }
-        cairo_set_source_rgb(cr, c.x, c.y, c.z);
-        cairo_set_line_width(cr, 1.0);
-        auto ac = get_coord(a);
-        auto bc = get_coord(b);
-        cairo_move_to(cr,ac.first,ac.second);   cairo_line_to (cr,bc.first,bc.second);
-        cairo_stroke (cr);
-    }
-
     void draw_pixel(int x, int y, Color c) {
         cairo_set_source_rgb(cr, c.x, c.y, c.z);
         cairo_rectangle(cr, x, y, 1, 1);
         cairo_fill(cr);
     }
     
-    void draw_sq(Color c, Point p) {
-        if (!debug) {
-            return;
-        }
-        auto ac = get_coord(p);
-        cairo_set_source_rgb(cr, c.x, c.y, c.z);
-        cairo_rectangle(cr, ac.first - 3, ac.second - 3, 5, 5);
-        cairo_fill(cr);
-    }
-
     void render() {
         if (width == 0 || rendered) {
             return;
@@ -84,7 +59,7 @@ public:
         }
     }
 
-    Surface(const Scene& scene, int width = 0, int height = 0) : debug(false), scene(scene), width(width), height(height), rendered(false) {
+    Surface(const Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {
         Drawable da;
         Screen *scr;
         int screen;
@@ -108,14 +83,9 @@ public:
     }
 
     void event_loop() {
-        int x = 500;
-        int y = 300;
-        int z = 10;
         while (1)  {
             XEvent report;
             XNextEvent(dsp, &report);
-            Point p;
-            Point orig(-3, -3, 4);
             switch  (report.type) {
                 case Expose:
                     if (report.xexpose.count != 0) {
@@ -138,38 +108,6 @@ public:
                     break;
                 case ButtonPress:
                 case KeyPress:
-                    debug = true;
-                    p = get_ray(x, y).get_point(z);
-                    draw_line(Color(1, 1, 0), orig, p);
-                    draw_sq(Color(0, 1, 1), p);
-                    switch (report.xkey.keycode) {
-                        case 36:
-                            draw();
-                            p = get_ray(x, y).get_point(z);
-                            scene.trace_ray(Ray(orig, (p-orig).normalized()));
-                            draw_line(Color(1, 1, 0), orig, p);
-                            draw_sq(Color(0, 1, 1), p);
-                            break;
-                        case 111:
-                            y -= 5;
-                            break;
-                        case 116:
-                            y += 5;
-                            break;
-                        case 113:
-                            x -= 5;
-                            break;
-                        case 114:
-                            x += 5;
-                            break;
-                        case 20:
-                            z -= 1;
-                            break;
-                        case 21:
-                            z += 1;
-                            break;
-                    }
-                    debug = false;
                 default:
                     /* All events selected by StructureNotifyMask
                      * except ConfigureNotify are thrown away here,
