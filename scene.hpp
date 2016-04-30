@@ -83,19 +83,19 @@ public:
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            double angle = dot(closest.object->normal(p), light_ray.direction);
+            double angle = fabs(dot(closest.object->normal(p), light_ray.direction));
             if (angle < 0) {
                 continue;
             }
             Intersection obstacle = find_closest(light_ray);
-            if (obstacle.t >= 1 - EPS) {
+            if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
                 return closest.object->texture(p)*(angle/sq(light_ray.direction) + AMBIENT);
             }
         }
         return closest.object->texture(p)*AMBIENT;
     }
 
-    void find_best_view(double angle) {
+    void find_best_view(double angle, bool light = true) {
         Vector dir = Vector(cos(angle), sin(angle), 0);
         const BBox& box = tree.get_bbox();
         Point center = (box.lower + box.upper) / 2;
@@ -103,7 +103,9 @@ public:
         double dist = std::max(radius.y, radius.z);
         center -= 5*dist*dir;
         camera = Camera(Ray(center, dir), Vector(0, 0, 1), 1);
-        add_light(Light{center, Color()});
+        if (light) {
+            add_light(Light{center, Color()});
+        }
     }
 };
 #endif

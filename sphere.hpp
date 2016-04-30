@@ -23,7 +23,7 @@ public:
             double t2 = (-b - sqrtd) / a;
             double min_t = fmin(t1, t2);
             double max_t = fmax(t1, t2);
-            double t = (min_t >= 0) ? min_t : max_t;
+            double t = (min_t >= EPS) ? min_t : max_t;
             if (t > 0) {
                 return t;
             }
