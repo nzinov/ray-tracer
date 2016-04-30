@@ -83,13 +83,19 @@ public:
         Point p = ray.get_point(closest.t);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            double angle = fabs(dot(closest.object->normal(p), light_ray.direction));
-            if (angle < 0) {
+            Vector normal = closest.object->normal(p);
+            double ang= fabs(angle(normal, light_ray.direction));
+            if (ang< 0) {
                 continue;
             }
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
-                return closest.object->texture(p)*(angle/sq(light_ray.direction) + AMBIENT);
+                Color c = closest.object->texture(p)*(ang + AMBIENT);
+                Vector refl = 2*(normal + ray.direction) - ray.direction;
+                if (angle(refl, light_ray.direction) < 0.01) {
+                    c += closest.object->texture(p)*0.2;
+                }
+                return c;
             }
         }
         return closest.object->texture(p)*AMBIENT;

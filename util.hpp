@@ -88,6 +88,10 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     friend Vector vec(Vector a, Vector b) {
         return Vector(a.y*b.z-a.z*b.y, -(a.x*b.z-a.z*b.x), a.x*b.y-a.y*b.x);
     }
+
+    friend double angle(Vector a, Vector b) {
+        return dot(a, b) / a.length() / b.length();
+    }
 };
 
 inline double sq(Vector v) {
