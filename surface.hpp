@@ -59,6 +59,22 @@ public:
         }
     };
 
+    void smoothen() {
+        std::vector<std::vector<Color> > new_buffer(width, std::vector<Color>(height));
+        for (int x = 1; x < width - 1; ++x) {
+            for (int y = 1; y < height - 1; ++y) {
+                for (int comp = 0; comp < 3; ++comp) {
+                    for (int nx = x - 1; nx < x + 2; ++nx) {
+                        for (int ny = y - 1; ny < y + 2; ++ny) {
+                            new_buffer[x][y].coord[comp] += buffer[nx][ny].coord[comp];
+                        }
+                    }
+                    new_buffer[x][y].coord[comp] /= 9;
+                }
+            }
+        }
+    }
+
     void render() {
         if (width == 0 || rendered) {
             return;
@@ -71,6 +87,7 @@ public:
             }
         }
         enchance_balance();
+        smoothen();
         rendered = true;
     }
 
