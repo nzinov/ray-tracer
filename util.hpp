@@ -27,7 +27,7 @@ inline double sq(double val) {
 
 const double EPS = 1e-6;
 
-bool almost_zero(double val) {
+inline bool almost_zero(double val) {
     return fabs(val) < EPS;
 }
 

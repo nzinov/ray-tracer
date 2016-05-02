@@ -74,7 +74,7 @@ public:
         return tree.intersect(ray);
     }
 
-    const double AMBIENT = 0;
+    const double AMBIENT = 0.1;
     Color trace_ray(Ray ray) const {
         Intersection closest = find_closest(ray);
         if (std::isinf(closest.t)) {
@@ -84,16 +84,13 @@ public:
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
             Vector normal = closest.object->normal(p);
-            double ang= fabs(angle(normal, light_ray.direction));
-            if (ang< 0) {
-                continue;
-            }
+            double ang = fabs(angle(normal, light_ray.direction));
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
                 Color c = closest.object->texture(p)*(ang + AMBIENT);
-                Vector refl = 2*(normal + ray.direction) - ray.direction;
-                if (angle(refl, light_ray.direction) < 0.01) {
-                    c += closest.object->texture(p)*0.2;
+                Vector refl = normal*dot(normal, ray.direction)*(-2) + ray.direction;
+                if (fabs(angle(refl, light_ray.direction) - 1) < 0.01) {
+                    c += closest.object->texture(p)*angle(refl, light_ray.direction)*0.3;
                 }
                 return c;
             }
