@@ -80,10 +80,11 @@ public:
             return;
         }
         buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
-        for (int x = 0; x < width; ++x) {
-            for (int y = 0; y < height; ++y) {
-                Color c = scene.trace_ray(get_ray(x, y));
-                buffer[x][y] = c;
+        int x, y;
+#pragma omp parallel for default(shared) private(x, y) schedule(static,100) collapse(2) num_threads(4)
+        for (x = 0; x < width; ++x) {
+            for (y = 0; y < height; ++y) {
+                buffer[x][y] = scene.trace_ray(get_ray(x, y));
             }
         }
         enchance_balance();
