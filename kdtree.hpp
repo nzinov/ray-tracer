@@ -96,6 +96,15 @@ struct Node {
             right->split(next(dim), depth + 1);
         }
     }
+
+    ~Node() {
+        if (left) {
+            delete left;
+        }
+        if (right) {
+            delete right;
+        }
+    }
 };
 
 class KDTree {
