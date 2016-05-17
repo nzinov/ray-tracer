@@ -3,9 +3,10 @@
 #include "primitive.hpp"
 
 class Triangle : public Primitive {
-    Point vertices[3];
 public:
-    Triangle(Color color, Point a, Point b, Point c) : Primitive(color), vertices{a, b, c} {}
+    Point vertices[3];
+    Triangle() {}
+    Triangle(Point a, Point b, Point c) : vertices{a, b, c} {}
     virtual Vector normal(Point) const {
         return vec(vertices[1] - vertices[0], vertices[2] - vertices[0]).normalized();
     }

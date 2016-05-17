@@ -9,27 +9,25 @@
 
 class Camera {
     Ray pos;
-    Vector orientation;
-    double zoom;
+    Vector vert;
+    Vector hor;
 public:
-    Camera(Ray ray, Vector orientation, double zoom) : pos(ray), orientation(orientation), zoom(zoom) {
-        orientation /= orientation.length();
-    }
+    Camera() {}
+    Camera(Ray ray, Vector vert, Vector hor) : pos(ray), vert(vert), hor(hor) {}
 
     Ray get_ray(double x, double y) const {
-        Vector ort = vec(pos.direction, orientation);
-        Vector direction = pos.direction*zoom + orientation*x + ort*y;
+        Vector direction = pos.direction + hor*x + vert*y;
         return Ray(pos.start, direction);
     }
 
     std::pair<double, double> get_coord(Point p) const {
         Vector v = p - pos.start;
-        double d = dot(v, pos.direction)/zoom;
+        double d = dot(v, pos.direction);
         if (almost_zero(d)) {
             return {0, 0};
         }
-        double x = dot(v, orientation)/d;
-        double y = dot(v, vec(pos.direction, orientation))/d;
+        double x = dot(v, hor) / d;
+        double y = dot(v, vert) / d;
         return {x, y};
     }
 };
@@ -42,6 +40,7 @@ public:
     KDTree tree;
 public:
     Scene(Camera camera) : camera(camera) {}
+    Scene() {}
     Scene(const Scene&) = delete;
     Scene& operator=(const Scene&) = delete;
     ~Scene() {
@@ -105,11 +104,13 @@ public:
         Vector radius = (box.upper - box.lower) / 2;
         double dist = std::max(radius.y, radius.z);
         center -= 5*dist*dir;
-        camera = Camera(Ray(center, dir), Vector(0, 0, 1), 1);
+        camera = Camera(Ray(center, dir), Vector(0, 0, 1), Vector(0, 1, 0));
         if (light) {
             add_light(Light{center, Color()});
         }
     }
+
+    friend class RTLoader;
 };
 #endif
 

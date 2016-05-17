@@ -23,12 +23,12 @@ class Surface {
 
 public:
     Ray get_ray(int x, int y) {
-        return scene.get_ray((x - width/2.0) / width, (y - height/2.0) / width);
+        return scene.get_ray((x - width/2.0) / width, (y - height/2.0) / height);
     }
 
     std::pair<int, int> get_coord(Point p) {
         auto pair = scene.get_coord(p);
-        return {(pair.first*width + width)/2, (pair.second*width + height)/2};
+        return {(pair.first*width + width)/2, (pair.second*height + height)/2};
     }
 
     void draw_pixel(int x, int y, Color c) {

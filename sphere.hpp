@@ -3,10 +3,11 @@
 #include "primitive.hpp"
 
 class Sphere : public Primitive {
+public:
     Point center;
     double radius;
-public:
-    Sphere(Color color, Point center, double radius) : Primitive(color), center(center), radius(radius) {}
+    Sphere() {}
+    Sphere(Point center, double radius) : center(center), radius(radius) {}
     virtual Vector normal(Point point) const {
         return (point - center).normalized();
     }

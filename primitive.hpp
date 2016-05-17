@@ -5,15 +5,16 @@
 #include "color.hpp"
 #include "ray.hpp"
 #include "bbox.hpp"
+#include "material.hpp"
 
 class Primitive {
-    Color color;
 public:
-    Primitive(Color color) : color(color) {}
+    Material* material;
+    Primitive() {}
     virtual Vector normal(Point point) const = 0;
 
     virtual Color texture(Point point) const {
-        return color;
+        return material->color;
     }
 
     virtual double intersect(Ray ray) const = 0;

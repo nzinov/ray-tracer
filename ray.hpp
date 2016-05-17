@@ -6,6 +6,7 @@ struct Ray {
     Point start;
     Vector direction;
     public:
+    Ray() {}
     Ray(Point start, Vector direction) : start(start), direction(direction) {}
 
     Point get_point(double t) const {
