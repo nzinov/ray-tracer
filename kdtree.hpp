@@ -67,7 +67,7 @@ struct Node {
         return nearest;
     }
     
-    const size_t CUTOFF = 1;
+    const size_t CUTOFF = 5;
     void split(short dim, int depth = 0) {
         if (objects.size() <= CUTOFF) {
             return;
