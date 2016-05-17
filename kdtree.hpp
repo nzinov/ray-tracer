@@ -72,25 +72,22 @@ struct Node {
         if (objects.size() <= CUTOFF) {
             return;
         }
-        double lower = INFINITY;
-        double upper = -INFINITY;
-        for (auto p : objects) {
-            BBox b = p->bbox();
-            lower = std::min(lower, b.lower.coord[dim]);
-            upper = std::max(upper, b.upper.coord[dim]);
-        }
-        coord = (upper + lower) / 2;
+        std::sort(objects.begin(), objects.end(),
+                [dim](Primitive* a, Primitive* b) { return a->bbox().upper.coord[dim] < b->bbox().upper.coord[dim]; });
+        size_t split = objects.size() / 2;
+        std::sort(objects.begin() + split, objects.end(),
+                [dim](Primitive* a, Primitive* b) { return a->bbox().lower.coord[dim] < b->bbox().lower.coord[dim]; });
+        coord = objects[split - 1]->bbox().upper.coord[dim];
         left = new Node();
         right = new Node();
-        for (auto p : objects) {
-            if (p->bbox().lower.coord[dim] <= coord) {
-                left->objects.push_back(p);
+        std::copy(objects.begin(), objects.begin() + split, std::back_inserter(left->objects));
+        std::copy(objects.begin() + split, objects.end(), std::back_inserter(right->objects));
+        for (auto iter = objects.begin() + split; iter != objects.end(); ++iter) {
+            if ((*iter)->bbox().lower.coord[dim] > coord) {
+                break;
             }
-            if (p->bbox().upper.coord[dim] >= coord) {
-                right->objects.push_back(p);
-            }
+            left->objects.push_back(*iter);
         }
-
         if (depth < 10) {
             left->split(next(dim), depth + 1);
             right->split(next(dim), depth + 1);
