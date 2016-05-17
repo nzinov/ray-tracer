@@ -104,7 +104,7 @@ public:
         Vector radius = (box.upper - box.lower) / 2;
         double dist = std::max(radius.y, radius.z);
         center -= 5*dist*dir;
-        camera = Camera(Ray(center, dir), Vector(0, 0, 1), Vector(0, 1, 0));
+        camera = Camera(Ray(center, dir), Vector(0, 0, 1), vec(dir, Vector(0, 0, 1)));
         if (light) {
             add_light(Light{center, Color()});
         }
