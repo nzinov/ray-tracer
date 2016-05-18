@@ -17,6 +17,7 @@ struct Intersection {
 };
 
 struct Node {
+    short axis;
     double coord;
     Node* left;
     Node* right;
@@ -39,58 +40,81 @@ struct Node {
         return {min_dist, closest};
     }
 
-    inline short next(short dim) const {
-        return (dim + 1) % 3;
-    }
-
-    Intersection intersect(const Ray& ray, double t_enter, double t_leave, short dim) const {
+    Intersection intersect(const Ray& ray, double t_enter, double t_leave) const {
         if (is_leaf()) {
             return intersect_contents(ray);
         }
-        double t_split = (coord - ray.start.coord[dim]) / ray.direction.coord[dim];
+        double t_split = (coord - ray.start.coord[axis]) / ray.direction.coord[axis];
         Node* lower = left;
         Node* upper = right;
         Intersection nearest;
-        if (ray.direction.coord[dim] < 0) {
+        if (ray.direction.coord[axis] < 0) {
             std::swap(lower, upper);
         }
         if (t_split < t_enter) {
-            nearest = upper->intersect(ray, t_enter, t_leave, next(dim));
+            nearest = upper->intersect(ray, t_enter, t_leave);
         } else if (t_split > t_leave) {
-            nearest = lower->intersect(ray, t_enter, t_leave, next(dim));
+            nearest = lower->intersect(ray, t_enter, t_leave);
         } else {
-            nearest = lower->intersect(ray, t_enter, t_split, next(dim));
+            nearest = lower->intersect(ray, t_enter, t_split);
             if (std::isinf(nearest.t) || nearest.t > t_split) {
-                nearest = upper->intersect(ray, t_split, t_leave, next(dim));
+                nearest = upper->intersect(ray, t_split, t_leave);
             }
         }
         return nearest;
     }
     
-    const size_t CUTOFF = 5;
-    void split(short dim, int depth = 0) {
-        if (objects.size() <= CUTOFF) {
-            return;
-        }
-        std::sort(objects.begin(), objects.end(),
-                [dim](Primitive* a, Primitive* b) { return a->bbox().upper.coord[dim] < b->bbox().upper.coord[dim]; });
-        size_t split = objects.size() / 2;
-        std::sort(objects.begin() + split, objects.end(),
-                [dim](Primitive* a, Primitive* b) { return a->bbox().lower.coord[dim] < b->bbox().lower.coord[dim]; });
-        coord = objects[split - 1]->bbox().upper.coord[dim];
-        left = new Node();
-        right = new Node();
-        std::copy(objects.begin(), objects.begin() + split, std::back_inserter(left->objects));
-        std::copy(objects.begin() + split, objects.end(), std::back_inserter(right->objects));
-        for (auto iter = objects.begin() + split; iter != objects.end(); ++iter) {
-            if ((*iter)->bbox().lower.coord[dim] > coord) {
-                break;
+    void split(BBox box) {
+        double best_value = INFINITY;
+        BBox best_left_box;
+        BBox best_right_box;
+        std::vector<Primitive*> back_list(objects);
+        for (int ax = 0; ax < 3; ++ax) {
+            std::sort(objects.begin(), objects.end(),
+                    [ax](Primitive* a, Primitive* b) { return a->bbox().lower.coord[ax] < b->bbox().lower.coord[ax]; });
+            std::sort(back_list.begin(), back_list.end(),
+                    [ax](Primitive* a, Primitive* b) { return a->bbox().upper.coord[ax] < b->bbox().upper.coord[ax]; });
+            size_t left_count = 0;
+            size_t right_count = objects.size();
+            for (size_t i = 0; i < objects.size(); ++i) {
+                double splitter = back_list[i]->bbox().upper.coord[ax];
+                while (left_count < objects.size() && objects[left_count]->bbox().lower.coord[ax] < splitter + EPS) {
+                    ++left_count;
+                }
+                while (right_count > 0 && back_list[objects.size() - right_count]->bbox().upper.coord[ax] + EPS < splitter) {
+                    --right_count;
+                }
+                if (splitter == box.lower.coord[ax]) {
+                    continue;
+                }
+                BBox left_box = box;
+                BBox right_box = box;
+                left_box.upper.coord[ax] = splitter;
+                right_box.lower.coord[ax] = splitter;
+                double value = left_count * left_box.surface() + right_count * right_box.surface();
+                if (value < best_value) {
+                    axis = ax;
+                    coord = splitter;
+                    best_value = value;
+                    best_left_box = left_box;
+                    best_right_box = right_box;
+                }
             }
-            left->objects.push_back(*iter);
         }
-        if (depth < 10) {
-            left->split(next(dim), depth + 1);
-            right->split(next(dim), depth + 1);
+        if (best_value*1.5 + 10 < objects.size() * box.surface()) {
+            left = new Node();
+            right = new Node();
+            for (size_t i = 0; i < objects.size(); ++i) {
+                if (objects[i]->bbox().upper.coord[axis] > coord - EPS) {
+                    right->objects.push_back(objects[i]);
+                }
+                if (objects[i]->bbox().lower.coord[axis] < coord + EPS) {
+                    left->objects.push_back(objects[i]);
+                }
+            }
+            objects.clear();
+            left->split(best_left_box);
+            right->split(best_right_box);
         }
     }
 
@@ -116,7 +140,7 @@ public:
         for (size_t i = 1; i < objects.size(); ++i) {
             outer += objects[i]->bbox();
         }
-        root->split(0);
+        root->split(outer);
     }
 
     Intersection intersect(Ray ray) const {
@@ -124,7 +148,7 @@ public:
         if (inter.second < 0 || almost_zero(inter.first - inter.second) || std::isinf(inter.second)) {
             return Intersection();
         }
-        return root->intersect(ray, inter.first, inter.second, 0);
+        return root->intersect(ray, inter.first, inter.second);
     }
 
     const BBox& get_bbox() {
