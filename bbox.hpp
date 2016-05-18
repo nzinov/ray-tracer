@@ -9,21 +9,17 @@ struct BBox {
     BBox(Point l = Point(), Point u = Point()) : lower(l), upper(u) {}
 
     std::pair<double, double> intersect(const Ray& ray) const {
-        Point inv_dir(1/ray.direction.x, 1/ray.direction.y, 1/ray.direction.z);
-        double lo = inv_dir.x*(lower.x - ray.start.x);
-        double hi = inv_dir.x*(upper.x - ray.start.x);
-        double tmin  = std::min(lo, hi);
-        double tmax = std::max(lo, hi);
+        double tmin = -INFINITY;
+        double tmax = INFINITY;
+        #pragma unroll
+        for (int i = 0; i < 3; ++i) {
+            double inv = 1 / ray.direction.coord[i];
+            double lo = (lower.coord[i] - ray.start.coord[i]) * inv;
+            double hi = (upper.coord[i] - ray.start.coord[i]) * inv;
+            tmin  = fmax(tmin, fmin(lo, hi));
+            tmax = fmin(tmax, fmax(lo, hi));
+        }
 
-        double lo1 = inv_dir.y*(lower.y - ray.start.y);
-        double hi1 = inv_dir.y*(upper.y - ray.start.y);
-        tmin  = std::max(tmin, std::min(lo1, hi1));
-        tmax = std::min(tmax, std::max(lo1, hi1));
-
-        double lo2 = inv_dir.z*(lower.z - ray.start.z);
-        double hi2 = inv_dir.z*(upper.z - ray.start.z);
-        tmin  = std::max(tmin, std::min(lo2, hi2));
-        tmax = std::min(tmax, std::max(lo2, hi2));
         if (tmax < tmin) {
             return {INFINITY, INFINITY};
         }
@@ -32,6 +28,7 @@ struct BBox {
     }
 
     BBox& operator+=(const BBox& other) {
+        #pragma unroll
         for (int c = 0; c < 3; ++c) {
             lower.coord[c] = std::min(lower.coord[c], other.lower.coord[c]);
             upper.coord[c] = std::max(upper.coord[c], other.upper.coord[c]);
@@ -40,11 +37,23 @@ struct BBox {
     }
 
     BBox& operator+=(const Point& point) {
+        #pragma unroll
         for (int c = 0; c < 3; ++c) {
             lower.coord[c] = std::min(lower.coord[c], point.coord[c]);
             upper.coord[c] = std::max(upper.coord[c], point.coord[c]);
         }
         return *this;
+    }
+
+    double surface() const {
+        double ans = 0;
+        #pragma unroll
+        for (int a = 0; a < 2; ++a) {
+            for (int b = a + 1; b < 3; ++b) {
+                ans += 2 * (upper.coord[a] - lower.coord[a])*(upper.coord[b] - lower.coord[b]);
+            }
+        }
+        return ans;
     }
 };
 #endif
