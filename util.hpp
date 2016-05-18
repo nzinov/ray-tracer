@@ -21,6 +21,11 @@ public:
     }
 };
 
+void log(const char* s) {
+    printf("%s\n", s);
+    fflush(stdout);
+}
+
 inline double sq(double val) {
     return val*val;
 }

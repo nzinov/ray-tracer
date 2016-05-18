@@ -76,6 +76,7 @@ public:
     }
 
     void render() {
+        log("Begin rendering");
         if (width == 0 || rendered) {
             return;
         }
@@ -90,14 +91,17 @@ public:
         enchance_balance();
         smoothen();
         rendered = true;
+        log("End rendering");
     }
 
     void draw() {
+        log("Begin drawing");
         for (int x = 0; x < width; ++x) {
             for (int y = 0; y < height; ++y) {
                 draw_pixel(x, y, buffer[x][y]);
             }
         }
+        log("End drawing");
     }
 
     Surface(Scene& scene, int width = 0, int height = 0) : scene(scene), width(width), height(height), rendered(false) {

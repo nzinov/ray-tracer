@@ -14,7 +14,7 @@ class RTLoader {
     std::map<std::string, Material*> dict;
 public:
     template <typename T> bool get(T& val) {
-        while (file && !isalnum(file.peek())) {
+        while (file && file.peek() != '-' && !isalnum(file.peek())) {
             if (file.peek() == '#') {
                 file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             } else {
@@ -48,6 +48,7 @@ public:
     }
 
     void populate(Scene& scene, const char* filename) {
+        log("Begin loading");
         file = std::ifstream(filename);
         std::string word;
         while (get(word)) {
@@ -60,6 +61,7 @@ public:
                 expect("material");
                 get(word);
                 obj->material = dict[word];
+                scene.add_object(obj);
             } else if (word == "sphere") {
                 Sphere* obj = new Sphere();
                 expect("coords");
@@ -69,20 +71,23 @@ public:
                 expect("material");
                 get(word);
                 obj->material = dict[word];
+                scene.add_object(obj);
             } else if (word == "entry") {
-                Material* material= new Material();
+                Material* material = new Material();
                 while (get(word) && word != "endentry") {
                     if (word == "name") {
+                        get(word);
                         dict[word] = material;
                     } else if (word == "color") {
                         read_point(material->color);
-                        material->color /= 255;
+                        material->color /= 255.0;
                     } else if (word == "reflect") {
                         get(material->reflectance);
                     } else if (word == "refract") {
                         get(material->index);
                     }
                 }
+                printf("<%f %f %f>", material->color.x, material->color.y, material->color.z);
             } else if (word == "viewport") {
                 Point origin, tl, bl, tr;
                 while (get(word) && word != "endviewport") {
@@ -99,6 +104,7 @@ public:
                 scene.camera = generate_camera(origin, tl, bl, tr);
             };
         }
+        log("End loading");
         scene.prepare();
     }
 };

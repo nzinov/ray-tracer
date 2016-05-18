@@ -134,6 +134,7 @@ class KDTree {
 
 public:
     void build(std::vector<Primitive*> objects) {
+        log("Begin building kd-tree");
         root = new Node();
         root->objects = objects;
         outer = objects[0]->bbox();
@@ -141,6 +142,7 @@ public:
             outer += objects[i]->bbox();
         }
         root->split(outer);
+        log("End building kd-tree");
     }
 
     Intersection intersect(Ray ray) const {

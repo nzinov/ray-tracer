@@ -9,6 +9,7 @@
 class STLLoader {
 public:
     static void populate(Scene& scene, const char* filename) {
+        log("Begin loading");
         std::ifstream file(filename);
         std::string next;
         short count = 1;
@@ -26,6 +27,7 @@ public:
                 ++count;
             }
         }
+        log("End loading");
         scene.prepare();
     }
 };
