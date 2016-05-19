@@ -13,8 +13,8 @@ public:
     Primitive() {}
     virtual Vector normal(Point point) const = 0;
 
-    virtual Color texture(Point point) const {
-        return material->color;
+    virtual const Material& texture(Point point) const {
+        return *material;
     }
 
     virtual double intersect(Ray ray) const = 0;

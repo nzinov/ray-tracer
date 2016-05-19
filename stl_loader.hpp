@@ -12,7 +12,7 @@ public:
         log("Begin loading");
         std::ifstream file(filename);
         std::string next;
-        short count = 1;
+        long long count = 0;
         Material* mat = new Material();
         mat->color = Color(1, 1, 1);
         while (file >> next) {
@@ -27,6 +27,7 @@ public:
                 ++count;
             }
         }
+        printf("%lli\n", count);
         log("End loading");
         scene.prepare();
     }

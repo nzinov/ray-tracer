@@ -36,9 +36,9 @@ public:
 
     Camera generate_camera(Point origin, Point tl, Point bl, Point tr) {
         Point center = (tr + bl) / 2;
-        Point vert = (tr + tl) / 2 - center;
-        Point hor = (tl + bl) / 2 - center;
-        return Camera(Ray(origin, center - origin), vert, hor);
+        Point vert = center - (tr + tl) / 2;
+        Point hor = center - (tl + bl) / 2;
+        return Camera(Ray(origin, center - origin), hor, vert);
     }
 
     void expect(const std::string& expected) {
@@ -49,6 +49,7 @@ public:
 
     void populate(Scene& scene, const char* filename) {
         log("Begin loading");
+        long long count = 0;
         file = std::ifstream(filename);
         std::string word;
         while (get(word)) {
@@ -62,6 +63,7 @@ public:
                 get(word);
                 obj->material = dict[word];
                 scene.add_object(obj);
+                ++count;
             } else if (word == "sphere") {
                 Sphere* obj = new Sphere();
                 expect("coords");
@@ -72,6 +74,7 @@ public:
                 get(word);
                 obj->material = dict[word];
                 scene.add_object(obj);
+                ++count;
             } else if (word == "entry") {
                 Material* material = new Material();
                 while (get(word) && word != "endentry") {
@@ -87,7 +90,6 @@ public:
                         get(material->index);
                     }
                 }
-                printf("<%f %f %f>", material->color.x, material->color.y, material->color.z);
             } else if (word == "viewport") {
                 Point origin, tl, bl, tr;
                 while (get(word) && word != "endviewport") {
@@ -102,8 +104,18 @@ public:
                     }
                 }
                 scene.camera = generate_camera(origin, tl, bl, tr);
-            };
+            } else if (word == "point") {
+                Light light;
+                expect("coords");
+                read_point(light.point);
+                double power;
+                expect("power");
+                get(power);
+                light.color = Color(1, 1, 1) * power;
+                scene.add_light(light);
+            }
         }
+        printf("Loaded %lli primitives\n", count);
         log("End loading");
         scene.prepare();
     }

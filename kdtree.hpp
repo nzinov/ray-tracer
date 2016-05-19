@@ -76,7 +76,7 @@ struct Node {
                     [ax](Primitive* a, Primitive* b) { return a->bbox().upper.coord[ax] < b->bbox().upper.coord[ax]; });
             size_t left_count = 0;
             size_t right_count = objects.size();
-            for (size_t i = 0; i < objects.size(); ++i) {
+            for (size_t i = 0; i < objects.size(); i += objects.size() / 100 + 1) {
                 double splitter = back_list[i]->bbox().upper.coord[ax];
                 while (left_count < objects.size() && objects[left_count]->bbox().lower.coord[ax] < splitter + EPS) {
                     ++left_count;
@@ -101,7 +101,7 @@ struct Node {
                 }
             }
         }
-        if (best_value*1.5 + 10 < objects.size() * box.surface()) {
+        if (best_value*1.5 + 1000 < objects.size() * box.surface()) {
             left = new Node();
             right = new Node();
             for (size_t i = 0; i < objects.size(); ++i) {

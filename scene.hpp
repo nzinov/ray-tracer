@@ -73,28 +73,52 @@ public:
         return tree.intersect(ray);
     }
 
-    const double AMBIENT = 0.1;
-    Color trace_ray(Ray ray) const {
+    const Color AMBIENT = Color(0.1, 0.1, 0.1);
+
+    Color trace_ray(Ray ray, short depth = 0) const {
+        if (depth >= 3) {
+            return Color();
+        }
         Intersection closest = find_closest(ray);
         if (std::isinf(closest.t)) {
             return Color();
         }
         Point p = ray.get_point(closest.t);
+        Color result;
+        const Material& texture = closest.object->texture(p);
+        Vector normal = closest.object->normal(p);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            Vector normal = closest.object->normal(p);
             double ang = fabs(angle(normal, light_ray.direction));
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
-                Color c = closest.object->texture(p)*(ang + AMBIENT);
-                Vector refl = normal*dot(normal, ray.direction)*(-2) + ray.direction;
-                if (fabs(angle(refl, light_ray.direction) - 1) < 0.01) {
-                    c += closest.object->texture(p)*angle(refl, light_ray.direction)*0.3;
-                }
-                return c;
+                double dist = light_ray.direction.length();
+                result += (light.color * (texture.color + AMBIENT)) * ang * (1 - texture.reflectance) / sq(dist);
             }
         }
-        return closest.object->texture(p)*AMBIENT;
+        if (!almost_zero(texture.reflectance)) {
+            Vector refl = normal*dot(normal, ray.direction)*(-2) + ray.direction;
+            result += trace_ray(Ray(p, refl), depth + 1) * texture.reflectance;
+        }
+        if (!almost_zero(texture.index)) {
+            double eta = 1.0 / texture.index;
+            double cos_theta = -dot(normal, ray.direction);
+            if(cos_theta < 0)
+            {
+                cos_theta *= -1.0;
+                normal *= -1.0;
+                eta = 1.0 / eta;
+            }
+            float k = 1.0 - sq(eta) * (1.0 - sq(cos_theta));
+            if (k >= 0.0) {
+                Vector refract = eta * ray.direction + (eta * cos_theta - sqrt(k)) * normal;
+                result += trace_ray(Ray(p, refract), depth + 1);
+            }
+        }
+        if (closest.t / ray.direction.length() < 1) {
+            printf("%f\n", closest.t / ray.direction.length());
+        }
+        return result;
     }
 
     void find_best_view(double angle, bool light = true) {
@@ -106,7 +130,7 @@ public:
         center -= 5*dist*dir;
         camera = Camera(Ray(center, dir), Vector(0, 0, 1), vec(dir, Vector(0, 0, 1)));
         if (light) {
-            add_light(Light{center, Color()});
+            add_light(Light{center, Color(1, 1, 1)});
         }
     }
 

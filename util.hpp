@@ -86,6 +86,10 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
         return *this / length();
     }
 
+    friend Vector operator*(Vector a, Vector b) {
+        return Vector(a.x*b.x, a.y*b.y, a.z*b.z);
+    }
+
     friend double dot(Vector a, Vector b) {
         return a.x*b.x + a.y*b.y + a.z*b.z;
     }
