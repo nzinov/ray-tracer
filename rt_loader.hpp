@@ -5,6 +5,7 @@
 #include <cassert>
 #include "scene.hpp"
 #include "triangle.hpp"
+#include "quadrangle.hpp"
 #include "sphere.hpp"
 #include "material.hpp"
 #include <map>
@@ -56,6 +57,17 @@ public:
             if (word == "triangle") {
                 Triangle* obj = new Triangle();
                 for (int i = 0; i < 3; ++i) {
+                    expect("vertex");
+                    read_point(obj->vertices[i]);
+                }
+                expect("material");
+                get(word);
+                obj->material = dict[word];
+                scene.add_object(obj);
+                ++count;
+            } else if (word == "quadrangle") {
+                Quadrangle* obj = new Quadrangle();
+                for (int i = 0; i < 4; ++i) {
                     expect("vertex");
                     read_point(obj->vertices[i]);
                 }

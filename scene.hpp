@@ -94,6 +94,7 @@ public:
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
                 double dist = light_ray.direction.length();
                 result += (light.color * (texture.color + AMBIENT)) * ang * (1 - texture.reflectance) / sq(dist);
+                result += AMBIENT;
             }
         }
         if (!almost_zero(texture.reflectance)) {
