@@ -1,0 +1,3 @@
+[submodule "ray-trace-tests"]
+	path = ray-trace-tests
+	url = git@github.com:tarekon/ray-trace-tests.git
