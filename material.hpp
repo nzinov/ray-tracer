@@ -5,7 +5,8 @@ struct Material {
     Color color;
     double reflectance;
     double index;
+    double alpha;
 
-    Material() : color(), reflectance(0), index(0) {}
+    Material() : color(), reflectance(0), index(0), alpha(1) {}
 };
 #endif

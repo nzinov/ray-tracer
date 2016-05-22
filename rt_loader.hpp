@@ -103,6 +103,8 @@ public:
                         get(material->reflectance);
                     } else if (word == "refract") {
                         get(material->index);
+                    } else if (word == "alpha") {
+                        get(material->alpha);
                     }
                 }
             } else if (word == "viewport") {
