@@ -45,7 +45,10 @@ public:
     void expect(const std::string& expected) {
         std::string got;
         assert(get(got));
-        assert(expected == got);
+        if (expected != got) {
+            printf("Expected '%s' got '%s'\n", expected.c_str(), got.c_str());
+            exit(1);
+        }
     }
 
     void populate(Scene& scene, const char* filename) {

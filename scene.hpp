@@ -93,8 +93,7 @@ public:
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
                 double dist = light_ray.direction.length();
-                result += (light.color * (texture.color + AMBIENT)) * ang * (1 - texture.reflectance) / sq(dist);
-                result += AMBIENT;
+                result += (light.color * texture.color) * ang * (1 - texture.reflectance) / sq(dist);
             }
         }
         if (!almost_zero(texture.reflectance)) {
@@ -115,9 +114,6 @@ public:
                 Vector refract = eta * ray.direction + (eta * cos_theta - sqrt(k)) * normal;
                 result += trace_ray(Ray(p, refract), depth + 1);
             }
-        }
-        if (closest.t / ray.direction.length() < 1) {
-            printf("%f\n", closest.t / ray.direction.length());
         }
         return result;
     }
