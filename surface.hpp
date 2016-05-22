@@ -23,7 +23,7 @@ class Surface {
 
 public:
     Ray get_ray(int x, int y) {
-        return scene.get_ray((x - width/2.0) / width, (y - height/2.0) / height);
+        return scene.get_ray((x - width/2.0) / width * 2, (y - height/2.0) / height * 2);
     }
 
     std::pair<int, int> get_coord(Point p) {
