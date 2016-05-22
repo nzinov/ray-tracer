@@ -24,12 +24,12 @@ public:
         Vector move = ray.start - vertices[0];
 
         double u = dot(move, P) * inv_det;
-        if (u < 0.0 || u > 1.0) {
+        if (u < -EPS || u > 1.0 + EPS) {
             return INFINITY;
         }
         Vector Q = vec(move, edge1);
         double v = dot(ray.direction, Q) * inv_det;
-        if(v < 0.0 || u + v  > 1.0) {
+        if(v < -EPS || u + v  > 1.0 + EPS) {
             return INFINITY;
         }
         double t = dot(edge2, Q) * inv_det;

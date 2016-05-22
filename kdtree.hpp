@@ -146,8 +146,11 @@ public:
     }
 
     Intersection intersect(Ray ray) const {
+        if (almost_zero(ray.direction.x) && almost_zero(ray.direction.z)) {
+            ray = ray;
+        }
         std::pair<double, double> inter = outer.intersect(ray);
-        if (inter.second < 0 || almost_zero(inter.first - inter.second) || std::isinf(inter.second)) {
+        if (inter.second < 0 ||  std::isinf(inter.second)) {
             return Intersection();
         }
         return root->intersect(ray, inter.first, inter.second);

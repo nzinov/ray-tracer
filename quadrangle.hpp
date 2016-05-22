@@ -23,19 +23,19 @@ public:
         double u = dot(move, P) * inv_det;
         Vector Q = vec(move, edge1);
         double v = dot(ray.direction, Q) * inv_det;
-        if(almost_zero(det) || u < 0.0 || u > 1.0 || v < 0.0 || u + v  > 1.0) {
-            Vector edge1 = vertices[1] - vertices[2];
-            Vector edge2 = vertices[3] - vertices[2];
+        if(almost_zero(det) || u < -EPS || u > 1.0 + EPS || v < -EPS || u + v  > 1.0 + EPS) {
+            Vector edge2 = vertices[1] - vertices[2];
+            Vector edge1 = vertices[3] - vertices[2];
             //Begin calculating determinant - also used to calculate u parameter
             Vector P = vec(ray.direction, edge2);
             double det = dot(P, edge1);
             double inv_det = 1.0 / det;
-            Vector move = ray.start - vertices[0];
+            Vector move = ray.start - vertices[2];
 
             double u = dot(move, P) * inv_det;
             Vector Q = vec(move, edge1);
             double v = dot(ray.direction, Q) * inv_det;
-            if(almost_zero(det) || u < 0.0 || u > 1.0 || v < 0.0 || u + v  > 1.0) {
+            if(almost_zero(det) || u < -EPS || u > 1.0 + EPS || v < -EPS || u + v  > 1.0 + EPS) {
                 return INFINITY;
             }
             double t = dot(edge2, Q) * inv_det;

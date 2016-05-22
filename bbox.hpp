@@ -20,7 +20,7 @@ struct BBox {
             tmax = fmin(tmax, fmax(lo, hi));
         }
 
-        if (tmax < tmin) {
+        if (tmax + EPS < tmin) {
             return {INFINITY, INFINITY};
         }
 
