@@ -67,6 +67,7 @@ public:
                 get(word);
                 obj->material = dict[word];
                 scene.add_object(obj);
+                obj->cache();
                 ++count;
             } else if (word == "quadrangle") {
                 Quadrangle* obj = new Quadrangle();

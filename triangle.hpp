@@ -4,12 +4,20 @@
 
 class Triangle : public Primitive {
 public:
+    BBox box;
     Point vertices[3];
     Triangle() {}
     Triangle(Point a, Point b, Point c) : vertices{a, b, c} {}
     virtual Vector normal(Point) const {
         return vec(vertices[1] - vertices[0], vertices[2] - vertices[0]).normalized();
     }
+
+    void cache() {
+        box = BBox(vertices[0], vertices[0]);
+        box += vertices[1];
+        box += vertices[2];
+    }
+
 
     virtual double intersect(Ray ray) const {
         Vector edge1 = vertices[1] - vertices[0];
@@ -37,9 +45,6 @@ public:
     }
 
     virtual BBox bbox() const {
-        BBox box(vertices[0], vertices[0]);
-        box += vertices[1];
-        box += vertices[2];
         return box;
     }
 };

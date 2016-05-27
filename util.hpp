@@ -37,12 +37,7 @@ inline bool almost_zero(double val) {
 }
 
 struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>, boost::equality_comparable<Vector> {
-    union {
-        struct {
-            double x, y, z;
-        };
-        double coord[3];
-    };
+    double coord[3];
     Vector() : coord{0, 0, 0} {}
     Vector(double x, double y, double z) : coord{x, y, z} {}
 
