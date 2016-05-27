@@ -19,7 +19,6 @@ int main(int argc, char* argv[])
             loader.populate(s, argv[1]);
         } else {
             STLLoader::populate(s, argv[1]);
-            s.find_best_view(0, true);
         }
         //s.add_object(new Sphere(Color(1, 0, 0), Point(0, 0, 0), 1));
         //s.add_light(Light{Point(-1, -0.5, 0.5), Color()});

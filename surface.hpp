@@ -32,7 +32,7 @@ public:
     }
 
     void draw_pixel(int x, int y, Color c) {
-        cairo_set_source_rgb(cr, c.x, c.y, c.z);
+        cairo_set_source_rgb(cr, c.coord[0], c.coord[1], c.coord[2]);
         cairo_rectangle(cr, x, y, 1, 1);
         cairo_fill(cr);
     }

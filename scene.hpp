@@ -120,18 +120,6 @@ public:
         return result;
     }
 
-    void find_best_view(double angle, bool light = true) {
-        Vector dir = Vector(cos(angle), sin(angle), 0);
-        const BBox& box = tree.get_bbox();
-        Point center = (box.lower + box.upper) / 2;
-        Vector radius = (box.upper - box.lower) / 2;
-        double dist = std::max(radius.y, radius.z);
-        center -= 5*dist*dir;
-        camera = Camera(Ray(center, dir), Vector(0, 0, 1), vec(dir, Vector(0, 0, 1)));
-        if (light) {
-            add_light(Light{center, Color(1, 1, 1)});
-        }
-    }
 
     friend class RTLoader;
 };

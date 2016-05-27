@@ -41,7 +41,7 @@ struct Node {
     }
 
     Intersection intersect_contents(const Ray& ray) const {
-        const Primitive* closest;
+        const Primitive* closest = nullptr;
         double min_dist = INFINITY;
         for (auto obj = objects.begin(); obj != objects.end(); ++obj) {
             double dist = (*obj)->intersect(ray);
@@ -191,9 +191,6 @@ public:
     }
 
     Intersection intersect(Ray ray) const {
-        if (almost_zero(ray.direction.x) && almost_zero(ray.direction.z)) {
-            ray = ray;
-        }
         std::pair<double, double> inter = outer.intersect(ray);
         if (inter.second < 0 ||  std::isinf(inter.second)) {
             return Intersection();

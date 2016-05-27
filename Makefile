@@ -6,6 +6,6 @@ bin/debug : main.cpp *.hpp Makefile
 
 bin/main : main.cpp *.hpp Makefile
 	mkdir -p bin/
-	g++ ${CXXFLAGS} -Wall -march=native -std=c++14 -Ofast -o $@ main.cpp -fopenmp `pkg-config --cflags --libs cairo x11` -pthread
+	g++ ${CXXFLAGS} -Wall -march=native -std=c++14 -O3 -o $@ main.cpp -fopenmp `pkg-config --cflags --libs cairo x11` -pthread
 test : bin/main
 	bin/main

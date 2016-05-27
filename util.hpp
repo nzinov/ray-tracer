@@ -42,38 +42,43 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     Vector(double x, double y, double z) : coord{x, y, z} {}
 
     double length() const {
-        return sqrt(sq(x) + sq(y) + sq(z));
+        return sqrt(sq(coord[0]) + sq(coord[1]) + sq(coord[2]));
     }
 
     bool operator==(const Vector& other) {
-        return fabs(x- other.x) < EPS && fabs(y - other.y) < EPS && fabs(z - other.z) < EPS;
+        for (int i = 0; i < 3; ++i) {
+            if (fabs(coord[i] - other.coord[i]) > EPS) {
+                return false;
+            }
+        }
+        return true;
     }
 
     Vector& operator+=(const Vector& other) {
-        x += other.x;
-        y += other.y;
-        z += other.z;
+        for (int i = 0; i < 3; ++i) {
+            coord[i] += other.coord[i];
+        }
         return *this;
     }
 
     Vector& operator-=(const Vector& other) {
-        x -= other.x;
-        y -= other.y;
-        z -= other.z;
+        for (int i = 0; i < 3; ++i) {
+            coord[i] -= other.coord[i];
+        }
         return *this;
     }
 
     Vector& operator*=(double factor) {
-        x *= factor;
-        y *= factor;
-        z *= factor;
+        for (int i = 0; i < 3; ++i) {
+            coord[i] *= factor;
+        }
         return *this;
     }
 
     Vector& operator/=(double factor) {
-        x /= factor;
-        y /= factor;
-        z /= factor;
+        for (int i = 0; i < 3; ++i) {
+            coord[i] /= factor;
+        }
         return *this;
     }
 
@@ -82,15 +87,19 @@ struct Vector : boost::additive<Vector>, boost::multiplicative2<Vector, double>,
     }
 
     friend Vector operator*(Vector a, Vector b) {
-        return Vector(a.x*b.x, a.y*b.y, a.z*b.z);
+        return Vector(a.coord[0]*b.coord[0], a.coord[1]*b.coord[1], a.coord[2]*b.coord[2]);
     }
 
     friend double dot(Vector a, Vector b) {
-        return a.x*b.x + a.y*b.y + a.z*b.z;
+        double ans = 0;
+        for (int i = 0; i < 3; ++i) {
+            ans += a.coord[i]*b.coord[i];
+        }
+        return ans;
     }
 
     friend Vector vec(Vector a, Vector b) {
-        return Vector(a.y*b.z-a.z*b.y, -(a.x*b.z-a.z*b.x), a.x*b.y-a.y*b.x);
+        return Vector(a.coord[1]*b.coord[2]-a.coord[2]*b.coord[1], -(a.coord[0]*b.coord[2]-a.coord[2]*b.coord[0]), a.coord[0]*b.coord[1]-a.coord[1]*b.coord[0]);
     }
 
     friend double angle(Vector a, Vector b) {

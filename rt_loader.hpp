@@ -30,9 +30,9 @@ public:
     }
 
     void read_point(Point& p) {
-        get(p.x);
-        get(p.y);
-        get(p.z);
+        for (int i = 0; i < 3; ++i) {
+            get(p.coord[i]);
+        }
     }
 
     Camera generate_camera(Point origin, Point tl, Point bl, Point tr) {
