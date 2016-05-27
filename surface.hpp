@@ -82,7 +82,7 @@ public:
         }
         buffer = std::vector<std::vector<Color> >(width, std::vector<Color>(height));
         int x, y;
-#pragma omp parallel for default(shared) private(x, y) schedule(static,100) collapse(2) num_threads(4)
+#pragma omp parallel for default(shared) private(x, y) schedule(dynamic) collapse(2) num_threads(4)
         for (x = 0; x < width; ++x) {
             for (y = 0; y < height; ++y) {
                 buffer[x][y] = scene.trace_ray(get_ray(x, y));
@@ -128,7 +128,6 @@ public:
     }
 
     void event_loop() {
-        double angle = 0;
         while (1)  {
             XEvent report;
             XNextEvent(dsp, &report);
@@ -152,22 +151,6 @@ public:
                     render();
                     draw();
                     break;
-                case ButtonPress:
-                case KeyPress:
-                    switch (report.xkey.keycode) {
-                        case 113:
-                            angle += 0.6;
-                            break;
-                        case 114:
-                            angle -= 0.6;
-                            break;
-                        default:
-                            continue;
-                    }
-                    scene.find_best_view(angle);
-                    rendered = false;
-                    render();
-                    draw();
                 default:
                     /* All events selected by StructureNotifyMask
                      * except ConfigureNotify are thrown away here,
