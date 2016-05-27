@@ -19,6 +19,7 @@ struct Task {
 };
 std::queue<Task> q;
 int count = 1;
+std::mutex lock;
 
 struct Intersection {
     double t;
@@ -76,7 +77,7 @@ struct Node {
         return nearest;
     }
     
-    void split(BBox box, std::queue<Task>& q) {
+    void split(BBox box) {
         double best_value = INFINITY;
         BBox best_left_box;
         BBox best_right_box;
@@ -125,11 +126,15 @@ struct Node {
                 }
             }
             objects.clear();
+            lock.lock();
             q.push(Task{left, best_left_box});
             q.push(Task{right, best_right_box});
             count += 2;
+            lock.unlock();
         }
+        lock.lock();
         count -= 1;
+        lock.unlock();
     }
 
     ~Node() {
@@ -145,12 +150,15 @@ struct Node {
 
 void run() {
     while (true) {
+        lock.lock();
         if (!q.empty()) {
             Task t = q.front();
             q.pop();
-            t.node->split(t.bbox, q);
+            lock.unlock();
+            t.node->split(t.bbox);
         } else {
             int my_count = count;
+            lock.unlock();
             if (my_count <= 0) {
                 break;
             }
