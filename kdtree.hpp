@@ -7,6 +7,18 @@
 #include "bbox.hpp"
 #include <vector>
 #include <algorithm>
+#include <queue>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
+
+struct Node;
+struct Task {
+    Node* node;
+    BBox bbox;
+};
+std::queue<Task> q;
+int count = 1;
 
 struct Intersection {
     double t;
@@ -64,7 +76,7 @@ struct Node {
         return nearest;
     }
     
-    void split(BBox box) {
+    void split(BBox box, std::queue<Task>& q) {
         double best_value = INFINITY;
         BBox best_left_box;
         BBox best_right_box;
@@ -113,9 +125,11 @@ struct Node {
                 }
             }
             objects.clear();
-            left->split(best_left_box);
-            right->split(best_right_box);
+            q.push(Task{left, best_left_box});
+            q.push(Task{right, best_right_box});
+            count += 2;
         }
+        count -= 1;
     }
 
     ~Node() {
@@ -127,6 +141,22 @@ struct Node {
         }
     }
 };
+
+
+void run() {
+    while (true) {
+        if (!q.empty()) {
+            Task t = q.front();
+            q.pop();
+            t.node->split(t.bbox, q);
+        } else {
+            int my_count = count;
+            if (my_count <= 0) {
+                break;
+            }
+        }
+    }
+}
 
 class KDTree {
     BBox outer;
@@ -141,7 +171,14 @@ public:
         for (size_t i = 1; i < objects.size(); ++i) {
             outer += objects[i]->bbox();
         }
-        root->split(outer);
+        q.push(Task{root, outer});
+        std::vector<std::thread> t;
+        for (int i = 0; i < 4; ++i) {
+            t.emplace_back(run);
+        }
+        for (auto& el : t) {
+            el.join();
+        }
         log("End building kd-tree");
     }
 

@@ -89,6 +89,7 @@ public:
             }
         }
         enchance_balance();
+        exit(0);
         smoothen();
         rendered = true;
         log("End rendering");
@@ -115,7 +116,9 @@ public:
         }
         screen = DefaultScreen(dsp);
         scr = DefaultScreenOfDisplay(dsp);
-        width = WidthOfScreen(scr), height = HeightOfScreen(scr);
+        if (width == 0) {
+            width = WidthOfScreen(scr), height = HeightOfScreen(scr);
+        }
         da = XCreateSimpleWindow(dsp, DefaultRootWindow(dsp), 0, 0, width, height, 0, 0, 0);
         XSelectInput(dsp, da, ExposureMask | KeyPressMask | ButtonPressMask | StructureNotifyMask);
         XMapWindow(dsp, da);

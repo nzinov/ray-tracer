@@ -76,7 +76,7 @@ public:
     const Color AMBIENT = Color(0.1, 0.1, 0.1);
 
     Color trace_ray(Ray ray, short depth = 0) const {
-        if (depth >= 3) {
+        if (depth > 2) {
             return Color();
         }
         Intersection closest = find_closest(ray);
@@ -97,10 +97,12 @@ public:
             }
         }
         if (!almost_zero(texture.reflectance)) {
+            printf("oh");
             Vector refl = normal*dot(normal, ray.direction)*(-2) + ray.direction;
             result += trace_ray(Ray(p, refl), depth + 1) * texture.reflectance * texture.alpha;
         }
         if (!almost_zero(texture.alpha - 1)) {
+            printf("oh");
             double eta = 1.0 / texture.index;
             double cos_theta = -dot(normal, ray.direction);
             if(cos_theta < 0)

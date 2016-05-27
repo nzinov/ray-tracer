@@ -25,6 +25,6 @@ int main(int argc, char* argv[])
         //s.add_light(Light{Point(-1, -0.5, 0.5), Color()});
         //s.prepare();
     }
-    Surface sf(s);
+    Surface sf(s, 1024, 768);
     sf.event_loop();
 }
