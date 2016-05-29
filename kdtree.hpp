@@ -19,7 +19,6 @@ struct Task {
 };
 std::queue<Task> q;
 int count = 1;
-std::mutex lock;
 
 struct Intersection {
     double t;
@@ -84,17 +83,17 @@ struct Node {
         std::vector<Primitive*> back_list(objects);
         for (int ax = 0; ax < 3; ++ax) {
             std::sort(objects.begin(), objects.end(),
-                    [ax](Primitive* a, Primitive* b) { return a->bbox().lower.coord[ax] < b->bbox().lower.coord[ax]; });
+                    [ax](Primitive* a, Primitive* b) { return a->box.lower.coord[ax] < b->box.lower.coord[ax]; });
             std::sort(back_list.begin(), back_list.end(),
-                    [ax](Primitive* a, Primitive* b) { return a->bbox().upper.coord[ax] < b->bbox().upper.coord[ax]; });
+                    [ax](Primitive* a, Primitive* b) { return a->box.upper.coord[ax] < b->box.upper.coord[ax]; });
             size_t left_count = 0;
             size_t right_count = objects.size();
             for (size_t i = 0; i < objects.size(); i += objects.size() / 100 + 1) {
-                double splitter = back_list[i]->bbox().upper.coord[ax];
-                while (left_count < objects.size() && objects[left_count]->bbox().lower.coord[ax] < splitter + EPS) {
+                double splitter = back_list[i]->box.upper.coord[ax];
+                while (left_count < objects.size() && objects[left_count]->box.lower.coord[ax] < splitter + EPS) {
                     ++left_count;
                 }
-                while (right_count > 0 && back_list[objects.size() - right_count]->bbox().upper.coord[ax] + EPS < splitter) {
+                while (right_count > 0 && back_list[objects.size() - right_count]->box.upper.coord[ax] + EPS < splitter) {
                     --right_count;
                 }
                 if (splitter == box.lower.coord[ax]) {
@@ -118,23 +117,19 @@ struct Node {
             left = new Node();
             right = new Node();
             for (size_t i = 0; i < objects.size(); ++i) {
-                if (objects[i]->bbox().upper.coord[axis] > coord - EPS) {
+                if (objects[i]->box.upper.coord[axis] > coord - EPS) {
                     right->objects.push_back(objects[i]);
                 }
-                if (objects[i]->bbox().lower.coord[axis] < coord + EPS) {
+                if (objects[i]->box.lower.coord[axis] < coord + EPS) {
                     left->objects.push_back(objects[i]);
                 }
             }
             objects.clear();
-            lock.lock();
             q.push(Task{left, best_left_box});
             q.push(Task{right, best_right_box});
             count += 2;
-            lock.unlock();
         }
-        lock.lock();
         count -= 1;
-        lock.unlock();
     }
 
     ~Node() {
@@ -149,21 +144,6 @@ struct Node {
 
 
 void run() {
-    while (true) {
-        lock.lock();
-        if (!q.empty()) {
-            Task t = q.front();
-            q.pop();
-            lock.unlock();
-            t.node->split(t.bbox);
-        } else {
-            int my_count = count;
-            lock.unlock();
-            if (my_count <= 0) {
-                break;
-            }
-        }
-    }
 }
 
 class KDTree {
@@ -180,12 +160,10 @@ public:
             outer += objects[i]->bbox();
         }
         q.push(Task{root, outer});
-        std::vector<std::thread> t;
-        for (int i = 0; i < 4; ++i) {
-            t.emplace_back(run);
-        }
-        for (auto& el : t) {
-            el.join();
+        while (!q.empty()) {
+          Task t = q.front();
+          q.pop();
+          t.node->split(t.bbox);
         }
         log("End building kd-tree");
     }

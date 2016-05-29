@@ -45,7 +45,7 @@ public:
         return t;
     }
 
-    virtual BBox bbox() const {
+    virtual const BBox& bbox() const {
         BBox box(vertices[0], vertices[0]);
         box += vertices[1];
         box += vertices[2];

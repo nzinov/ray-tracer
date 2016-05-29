@@ -77,6 +77,7 @@ public:
 
     void render() {
         log("Begin rendering");
+        printf("%d %d\n", width, height);
         if (width == 0 || rendered) {
             return;
         }

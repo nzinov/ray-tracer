@@ -4,7 +4,6 @@
 
 class Triangle : public Primitive {
 public:
-    BBox box;
     Point vertices[3];
     Triangle() {}
     Triangle(Point a, Point b, Point c) : vertices{a, b, c} {}
@@ -44,7 +43,7 @@ public:
         return t;
     }
 
-    virtual BBox bbox() const {
+    virtual const BBox& bbox() const {
         return box;
     }
 };

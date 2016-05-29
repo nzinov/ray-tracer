@@ -89,32 +89,9 @@ public:
         Vector normal = closest.object->normal(p);
         for (auto& light : lights) {
             Ray light_ray(p, light.point - p);
-            double ang = fabs(angle(normal, light_ray.direction));
             Intersection obstacle = find_closest(light_ray);
             if (obstacle.t <= EPS || obstacle.t >= 1 - EPS) {
-                double dist = light_ray.direction.length();
-                result += (light.color * texture.color) * ang * (1 - texture.reflectance) * texture.alpha / sq(dist);
-            }
-        }
-        if (!almost_zero(texture.reflectance)) {
-            printf("oh");
-            Vector refl = normal*dot(normal, ray.direction)*(-2) + ray.direction;
-            result += trace_ray(Ray(p, refl), depth + 1) * texture.reflectance * texture.alpha;
-        }
-        if (!almost_zero(texture.alpha - 1)) {
-            printf("oh");
-            double eta = 1.0 / texture.index;
-            double cos_theta = -dot(normal, ray.direction);
-            if(cos_theta < 0)
-            {
-                cos_theta *= -1.0;
-                normal *= -1.0;
-                eta = 1.0 / eta;
-            }
-            float k = 1.0 - sq(eta) * (1.0 - sq(cos_theta));
-            if (k >= 0.0) {
-                Vector refract = eta * ray.direction + (eta * cos_theta - sqrt(k)) * normal;
-                result += trace_ray(Ray(p, refract), depth + 1) * (1 - texture.alpha);
+                result += texture.color;
             }
         }
         return result;

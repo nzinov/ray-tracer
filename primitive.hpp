@@ -10,6 +10,7 @@
 class Primitive {
 public:
     Material* material;
+    BBox box;
     Primitive() {}
     virtual Vector normal(Point point) const = 0;
 
@@ -18,7 +19,7 @@ public:
     }
 
     virtual double intersect(Ray ray) const = 0;
-    virtual BBox bbox() const = 0;
+    virtual const BBox& bbox() const = 0;
     Primitive(const Primitive&) = delete;
     Primitive& operator=(const Primitive&) = delete;
     Primitive(Primitive&&) = default;

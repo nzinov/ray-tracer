@@ -32,7 +32,7 @@ public:
         return INFINITY;
     }
 
-    virtual BBox bbox() const {
+    virtual const BBox& bbox() const {
         Point diag(radius, radius, radius);
         return BBox(center - diag, center + diag);
     }
